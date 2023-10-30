@@ -1,0 +1,144 @@
+//crear paquete, tiene un espacio en el principio
+ python setup.py sdist
+
+//para instalar el insalador de pip
+python.exe -m pip install --upgrade pip
+
+//poner paquete en el directorio princiapl de pyton, 1ro estar en cmd dentro de dist
+pip3 install 
+//despues de install un espacio y el nombre del comprimido.gz ,osea ejemplo:
+pip3 install Paquete-1.2.tar.gz
+
+//para quitar un paquete del directorio principal
+pip3 uninstall 
+//despues de uninstall un espacio nombre del paquete
+pip3 uninstall Paquete
+
+//para crear .exe
+pyinstaller --windowed --onefile --icon=./logo.ico 
+pyinstaller --windowed --onefile --icon=Direccion.ico NombreArchivo.py
+
+//para crear .exe pero aun es icono por defecto
+pyinstaller --windowed --onefile
+pyinstaller --windowed --onefile NombreArchivo.py
+
+//para crear .exe pero aun es icono por defecto,  tiene todos los archivos sueltos y se ejecuta oviamente por el .exe
+pyinstaller --windowed
+pyinstaller --windowed NombreArchivo.py
+
+//para crear .exe pero aun es icono por defecto,   tiene todos los archivos sueltos y se ejecuta oviamente por el .exe, y con la consola siempre atras
+pyinstaller 
+pyinstaller NombreArchivo.py
+
+//crear servidor (osea si hay un index.html, lo carga automaticamente, es genial!!!)
+python -m http.server 8082
+
+//compila el codigo (a .pyc) pero aveses hay carpetas en las que no entra
+python -m compileall
+
+//instalar en cascada las librerias de un proyecto teniedo el requirements.txt
+CP> pip install -r requirements.txt
+
+//Para instalar el creador de entornos virtuales
+pip install virtualenv
+
+//para crear el entorno virtual
+CARPETA ALMACENAR ENTORNO>python -m venv NOMBRE_ENTORNO
+CARPETA ALMACENAR ENTORNO>python -m venv .venv
+
+//para activar un entorno virtual
+CARPETA ENTORNOS>NOMBRE_ENTORNO\Scripts\activate.bat
+CARPETA ENTORNOS>env36\Scripts\activate.bat
+CARPETA ENTORNOS>.venv\Scripts\activate.bat
+
+//para crear requerimientos 
+CP> pip freeze > requirements.txt
+
+//para instalar los requerimientos
+CP> pip install -r requirements.txt
+
+//STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+python manage.py collectstatic
+
+//Flask *********************************************************
+
+//insalar flask  (~como django)
+pip install flask
+
+//lo necesario para flask (necesita lo anterior)
+pip install flask_restful flask_sqlalchemy flask_migrate flask_marshmallow marshmallow-sqlalchemy
+
+//Poner las variables necesarias
+CP> set FLASK_APP=NOMBRE_PRINCIPAL.py
+CP> set FLASK_ENV=development
+
+//Django Python 3.1 ******************************************
+//Para crear un proyecto se localiza en consola la carpeta donde se creara la carpeta del proyecto (CP)
+django-admin startproject 
+django-admin startproject CarpetaProyecto
+
+//Para crear la BD.sqlite por defecto del proyecto (en CP)
+python manage.py migrate
+
+//Para crear el servidor (en CP)  http://localhost:8000/
+python manage.py runserver
+
+//Para crear una aplicacion (en CP) 
+python manage.py startapp 
+python manage.py startapp NombreCarpetaAplicacion
+django-admin startapp 
+django-admin startapp NombreCarpetaAplicacion
+
+//Para verificar que una app esta sin errores (en CP) 
+python manage.py check 
+python manage.py check NombreAplicacion
+//si todo esta bien sale "System check identified no issues (0 silenced)."
+
+//Para crear la estructura de la BD (en CP) crea el archivo BD vacio y retorna el #### version actual de la BD
+python manage.py makemigrations
+// si sale bien es
+//"Migrations for 'NombreAplicacion':
+//  NombreAplicacion\migrations\####_initial.py //puede ser 0001 u otro
+//    - Create model Tabla1
+//    - Create model Tabla2"
+
+
+//Con este #### se manda a crear el codigo SQL (en CP) luego se vuelve a llamar a crea la BD "python manage.py migrate"
+python manage.py sqlmigrate 
+python manage.py sqlmigrate NombreAplicacion ####
+
+//Para abrir la consola de Django adaptada a nuestro proyecto (en CP)
+python manage.py shell
+//sale ... y >>>En donde se escribe
+
+//Para crear un super usuario (en CP) luego responder a las preguntas que salen e ir a localhost:8000/admin
+python manage.py createsuperuser
+
+//Para crear una tabla para el cache (en CP)  (tabla_cache puede ser cualquier nombre)
+python manage.py createcachetable tabla_cache
+
+//Django Python 2.7 ******************************************
+//para instalarlo se localiza con la conzola la libreria de instalacion y enconsola se entra a la carpeta (esta tiene 
+// un archivo setup.py )
+python setup.py install
+
+//Para crear un proyecto se localiza en consola la carpeta donde se creara la carpeta del proyecto
+//la parte "C:\" se puede sustituir por la ruta donde este localizado el directorio Python
+python C:\Python27\Lib\site-packages\django\bin\django-admin.py startproject NombreCarpetaProyecto
+python C:\Python27\Lib\site-packages\django\bin\django-admin.py startproject 
+
+//Para abrir el servidor se localiza en consola la direccion de NombreCarpetaProyecto (esta tiene un archivo manage.py)
+//luego de la ejecucion esta consola no se podra usar pq representa al servidor
+python manage.py runserver
+
+//Para sincronizar con la bd se localiza en consola la direccion de NombreCarpetaProyecto (esta tiene un archivo manage.py)
+python manage.py syncdb
+
+//Para crear una aplicacion se localiza en consola la direccion de NombreCarpetaProyecto (esta tiene un archivo manage.py)
+python manage.py startapp NombreCarpetaAplicacion
+python manage.py startapp 
+
+//Para la creacion de tablas a trabes de los modelos (NombreCarpetaAplicacion/models.py) de una plicacion
+//se localiza en consola la direccion de NombreCarpetaProyecto (esta tiene un archivo manage.py)
+python manage.py sql NombreCarpetaAplicacion
+python manage.py sql 

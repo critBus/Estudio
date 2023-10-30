@@ -1,0 +1,34 @@
+++++++++++++++++++++++++++++++++++++++
+tipo(alcanze): descripcion corta
+/////////////////////////////////
+cuerpo del commit
+
+descripcion footer
++++++++++++++++++++++++++++++++++++++
+
+alcanze-> es el modulo, paquete, tal ves subproyecto donde se encuentra la modificacion
+
+descripcion footer-> se pone un salto de linea
+					si hay un cambio grande, que afecte la manera en 
+					que tercerseros usan nuestro codigo, como por
+					ejemplo que una funcion no reciva los mismos
+					parametros, tiene que comenzar el footer con
+					BREAKING CHANGE: descripcion
+
+tipo(alcanze)!: ->  se agrega un ! si hay un BREAKING CHANGE		
+
+fix:  arreglar un error
+feat: nueva funcionalidad
+build: Un cambio que afecte al sistema de compilación o de dependencias externas 
+chore: Cuando hacemos cambios pero no afectan al código fuente 
+ci: Todo lo relacionado a la integración continua y aquellos script que estemos modificando 
+docs: agrega o modifica la documentacion
+style: Cambios con respecto al css y al estilo del proyecto 
+		Mejorar la higiene del codigo, limpieza 
+refactor:  mejora el codigo, no arregla nada roto
+perf:	un cambio que mejora el rendimiento
+test:   agrega un nuevo test
+
+---------
+release: para nuevas versiones
+chore: Mejorar la higiene del codigo, limpieza   

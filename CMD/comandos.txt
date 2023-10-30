@@ -1,0 +1,35 @@
+cd C:\ direccion
+cd \D E:\ canvia el disco ( hay que add \D )
+cd /D E:\ canvia el disco ( hay que add \D )
+cd..  para atras
+cls  limpia la consola
+
+
+
+>LETRA:
+>cd DIRECCION
+
+dir //lista todos los archivos en el directorio
+
+curl //para realizar peticiones http (como get,pust)
+curl direccionWeb  //es una peticion get
+	-s  sin inforamcion extra,solo lo que retorna
+	-v  con toda la inforamcion extra de la conexion
+
+
+
+
+call nombreArchivo  //lo abre
+type nombreArchivoTexto //muestra su contenido en consola
+
+
+//cambiar directorios, el directorio original debe exister hasta el padre, pero el hijo no
+//Ejemplo Original: "..ruta/PADRE" nuevo "..nuevaruta/PADRE/HIJO"
+> mklink /J "..rutaOrignial/PADRE/HIJO" "..nuevaRuta/PADRE/HIJO"
+> mklink /J "" ""
+
+//desacer la redireccion
+> rmdir "..rutaOrignial/PADRE/HIJO"
+
+> move "dire archivo o carpeta" "dire carpeta destino padre"
+> move

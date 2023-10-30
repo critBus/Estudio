@@ -1,0 +1,30 @@
+los pasos son
+1-add
+2-commit
+3-push
+
+git clone git@gitlab.com:group18323137/project1.git
+
+//baja y actualiza un proyecto
+git pull
+
+//comprueba culaes archivos se modificaron
+git status
+//los archivos en rojo no se han agregado
+//los verdes ya se han agregado
+
+//agrega los cambios
+git add
+
+//agrega solo este archivo al proyecto
+git add -f nombreArchivo
+git add -f 
+git add -f nombreCarpeta/
+
+//para hacer un commit
+git commit -m "nombre del comit"
+git commit -m ""
+git commit -m 
+
+//para hacer un push
+git push

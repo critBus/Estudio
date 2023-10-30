@@ -1,0 +1,12 @@
+
+// las comillas son obligadas 
+> cd "dire"
+
+//mover 
+> mv "dire archivo o carpeta" "dire carpeta destino padre"
+
+//muestra la url actual
+> pwd  
+
+//crear archivos
+> ni "nombre archivo"

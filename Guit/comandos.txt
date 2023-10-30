@@ -1,0 +1,122 @@
+los pasos son
+1-add .  		//agrega los cambios
+2-commit -m	""	// los etiqueta
+3-push			//los envia a la nube 
+ 
+
+//crear un repositorio
+> git init 
+
+> git clone git@gitlab.com:group18323137/project1.git
+
+//baja y actualiza un proyecto
+> git pull
+
+//comprueba culaes archivos se modificaron
+> git status 
+> git status -s
+//los archivos en rojo no se han agregado
+//los verdes ya se han agregado
+
+//agrega los cambios, el punto es necesario
+> git add .
+
+//agrega solo este archivo al proyecto
+> git add -f nombreArchivo
+> git add -f 
+> git add -f nombreCarpeta/
+
+//para hacer un commit
+> git commit -m "nombre del comit"
+> git commit -m ""
+> git commit -m 
+
+//para hacer un push
+> git push
+
+
+> git version
+> git help
+
+//para revisar los commit echos anteriormente
+> git log --oneline
+
+//para salir de la consola de guit si sale al hacer el commit
+> :q!
+
+//para configurarlo
+> git config --global user.name ""
+> git config --global user.email ""
+
+//para ver la url(internet git) del proyecto actualiza
+> git remote -v
+
+
+//para ver los cambios de un commit expesifico (el numero aleatorio que gener git, ver guit log)
+> git checkout ALEATORIEDAD Ejm: 84318fb
+> git checkout RAMA  Ejm: main
+> git checkout 
+
+//para retitular el nombre de la rama actual por otro (no cambia de rama, solo retitula a la actual)
+> git branch -m nombre_actual nuevo_nombre
+
+
+//para poner el proyecto en el estado de un commit expesifico (el numero aleatorio que gener git, ver guit log)
+//de alguna elimin los commit posteriores a ese 
+//conserva los archivos actuales (osea modifica los que son
+		diferentes pero deja los que no existen)
+//(no me parece recomendable, pero supongo que es por si 
+//		se cometio algun error grave que mancho toda una rama)
+//si te arrepientes y no has echo nigun cambio aun, lo vuelves
+// 		a llamar con la ALEATORIEDAD en la que estabas
+> git reset ALEATORIEDAD
+
+//para hacer los mismo pero eliminando los archivos que no existen
+> git reset --hard ALEATORIEDAD
+
+// en caso de arrpentirse del --hard
+//para ver todos los archivos y cambios de los commit
+//luego repiten el --hard pero apuntando al cambio que perdieron 
+> git reflog
+
+//para elminar un commit expesifico (el numero aleatorio que gener git, ver guit log)
+> git revert ALEATORIEDAD
+
+//para ver la rama acutal
+> git branch 
+
+//para crear una nueva rama
+// !NO cambia automaticamente a esta rama
+> git branch nombre-rama
+
+//para moverse a esa rama 
+> git checkout nombre-rama
+
+//para ver los cambios realizados entre las ramas
+> git log --oneline --graph
+
+//para unir dos ramas
+//-1ro ubicarse en la rama a la que se le van a agregar los cambios
+			(generalmente el main)
+//en caso de probocar un conflito
+//		-1ro adaptar manualmente los cambios
+//					(buscar los >>>>> y <<<<< (la linea del medio son 
+//												los cambios	))
+//		-2do realizar un commit
+> git merge nombre-rama-con-cambios  (ejem: dev)
+
+//para ponerle etiquetas a la rama actual
+//se usa para ponerle el nombre de la version 
+//		y tal ves un string asosiado que normalmente son los 
+//		numeros de la version "0.0.1.2"
+> git tag nombre-version -m "informacion ejm: 0.0.1.2"
+> git tag   -m ""
+
+//para poder subir  los cambios de los tag
+> git push --tags
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+gitignore
+
+nombre archivo o carpeta
+
