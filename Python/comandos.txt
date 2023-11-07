@@ -39,12 +39,19 @@ python -m compileall
 //instalar en cascada las librerias de un proyecto teniedo el requirements.txt
 CP> pip install -r requirements.txt
 
+
+
+
 //Para instalar el creador de entornos virtuales
 pip install virtualenv
+
+sudo apt install python3-venv
 
 //para crear el entorno virtual
 CARPETA ALMACENAR ENTORNO>python -m venv NOMBRE_ENTORNO
 CARPETA ALMACENAR ENTORNO>python -m venv .venv
+
+python3 -m venv ubicación_entorno_virtual
 
 //para activar un entorno virtual
 CARPETA ENTORNOS>NOMBRE_ENTORNO\Scripts\activate.bat
