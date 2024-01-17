@@ -1,3 +1,8 @@
+//formatear el codigo 
+black .
+isort .
+pylint .
+
 //crear paquete, tiene un espacio en el principio
  python setup.py sdist
 
@@ -39,9 +44,6 @@ python -m compileall
 //instalar en cascada las librerias de un proyecto teniedo el requirements.txt
 CP> pip install -r requirements.txt
 
-
-
-
 //Para instalar el creador de entornos virtuales
 pip install virtualenv
 
@@ -64,22 +66,8 @@ CP> pip freeze > requirements.txt
 //para instalar los requerimientos
 CP> pip install -r requirements.txt
 
-//STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
-python manage.py collectstatic
-
-//Flask *********************************************************
-
-//insalar flask  (~como django)
-pip install flask
-
-//lo necesario para flask (necesita lo anterior)
-pip install flask_restful flask_sqlalchemy flask_migrate flask_marshmallow marshmallow-sqlalchemy
-
-//Poner las variables necesarias
-CP> set FLASK_APP=NOMBRE_PRINCIPAL.py
-CP> set FLASK_ENV=development
-
 //Django Python 3.1 ******************************************
+
 //Para crear un proyecto se localiza en consola la carpeta donde se creara la carpeta del proyecto (CP)
 django-admin startproject 
 django-admin startproject CarpetaProyecto
@@ -95,6 +83,9 @@ python manage.py startapp
 python manage.py startapp NombreCarpetaAplicacion
 django-admin startapp 
 django-admin startapp NombreCarpetaAplicacion
+
+//STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+python manage.py collectstatic
 
 //Para verificar que una app esta sin errores (en CP) 
 python manage.py check 
@@ -124,6 +115,10 @@ python manage.py createsuperuser
 //Para crear una tabla para el cache (en CP)  (tabla_cache puede ser cualquier nombre)
 python manage.py createcachetable tabla_cache
 
+//acceder a la consola de django desde afuera
+//necesario ['django_extensions',] en APPS
+python manage.py shell_plus
+
 //Django Python 2.7 ******************************************
 //para instalarlo se localiza con la conzola la libreria de instalacion y enconsola se entra a la carpeta (esta tiene 
 // un archivo setup.py )
@@ -149,3 +144,16 @@ python manage.py startapp
 //se localiza en consola la direccion de NombreCarpetaProyecto (esta tiene un archivo manage.py)
 python manage.py sql NombreCarpetaAplicacion
 python manage.py sql 
+
+
+//Flask *********************************************************
+
+//insalar flask  (~como django)
+pip install flask
+
+//lo necesario para flask (necesita lo anterior)
+pip install flask_restful flask_sqlalchemy flask_migrate flask_marshmallow marshmallow-sqlalchemy
+
+//Poner las variables necesarias
+CP> set FLASK_APP=NOMBRE_PRINCIPAL.py
+CP> set FLASK_ENV=development
