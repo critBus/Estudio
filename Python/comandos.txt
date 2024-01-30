@@ -83,6 +83,7 @@ python manage.py startapp
 python manage.py startapp NombreCarpetaAplicacion
 django-admin startapp 
 django-admin startapp NombreCarpetaAplicacion
+django-admin startapp NombreCarpetaAplicacion carpetaApps/NombreCarpetaAplicacion
 
 //STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 python manage.py collectstatic

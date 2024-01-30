@@ -1,0 +1,37 @@
+docker-compose up
+docker run -p 8000:8000 carpeta/carpeta
+docker run -p 8000:8000 carpeta/carpeta -v /dire/carpeta/nueva/:/ 
+docker run -p 8000:8000 carpeta/carpeta -v /dire/carpeta/nueva/:/ -d  #no muestra el log
+docker logs --follow  elidpiladeletras #muestra el log
+docker ps  # muestra los tags de los contenedores que se estan ejecutando 
+docker stop etiqueta  # en lo de arriba ( carpeta/carpeta ) es la etiqueta
+docker exec -it elidpiladeletras /bin/sh # abre la consola de alpine
+
+docker compose up --build
+
+docker compose build 
+
+docker-compose run
+docker-compose run django
+
+docker build -t rene .
+docker build -t django_resolviste_1 .
+
+docker-compose run NAME=rene
+set HOSTNAME=localhost
+docker compose up --HOSTNAME=localhost
+
+#${IMAGE}_django
+
+RUN python3 -m ensurepip:
+error: externally-managed-environment
+
+× This environment is externally managed
+╰─>
+    The system-wide python installation should be maintained using the system
+    package manager (apk) only.
+
+
+error: externally-managed-environment in RUN python3 -m ensurepip  con dockerfile
+
+alpine error: externally-managed-environment 
