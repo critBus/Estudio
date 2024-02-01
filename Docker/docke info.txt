@@ -1,0 +1,27 @@
+# la imagen padre
+FROM NOMBRE:ETIQUETA
+
+# para crear la carpeta en la que se van a encotrar los archivos de tu app
+RUN mkdir -p /direccion_a_tu_carpeta_principal_a_crear
+RUN mkdir -p /home/app
+
+# para indicar en que carpeta estamos trabajando
+WORKDIR /direccion_a_tu_carpeta
+WORKDIR /home/app
+
+# copia los archvios a esa carpeta
+# en algunos casos como el de nodemon para cuando se esta en dev
+#		no seria necesario esta linea pq el leeria directamente la carpeta
+COPY . /direccion_a_tu_carpeta
+COPY . /home/app
+
+# se expone un puerto
+EXPOSE PUERTO
+EXPOSE 3000
+
+# luego el comando necesario para levantar nuestra aplicacion
+# es probable que tengas que indicar la ruta a tu carpeta app
+# si estas usando WORKDIR no necesitar indicar la ruta
+CMD ["comando1","arg1","arg2"]
+CMD ["node","/home/app/index.js"]
+CMD ["nodemon","index.js"]

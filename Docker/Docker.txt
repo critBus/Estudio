@@ -1,3 +1,131 @@
+# para comunicarse entre contenedores cuando se encuentran dentro de una misma red
+# es a trabes del {{ nombre del contenedor }} que va a representar a su dominio
+
+# para mostrar los estados de los conjuntos (recordar que puede aver mas de un archivo)
+> docker-compose ps 
+
+# para salir de un swarm (siendo worker)
+# --force sale aunque sea un manager 
+> docker swarm leave
+
+# muestra el comando que hay que lanzar dentro de un contenedor para que se 
+# 	una a este swarm
+> docker swarm join-token worker
+
+# muestra el comando que hay que lanzar dentro de un contenedor para que se 
+# 	una a este swarm pero en modo manager
+> docker swarm join-token manager
+
+# crea un swarm
+> docker swarm init
+
+# listar los volumenes actuales
+> docker volumen ls
+
+# crear un volumen
+> docker volumen create 
+> docker volumen create NOMBRE_VOLUMEN
+
+# ver los detalles de un volumen
+> docker volumen inspect 
+> docker volumen inspect NOMBRE_VOLUMEN
+
+# eliminar un volumen
+> docker volumen rm 
+> docker volumen rm NOMBRE_VOLUMEN
+
+# para crear los contenedores en base a un docker compose 
+# ojo si hay que buil pero ya se creo (build) en algun momento no lo buelve a crear, osea no lo actualiza
+> docker compose up
+> docker compose up --build
+> docker compose -f docker-compose-dev.yml up
+
+# elimina todos los contenedores asosiados a un docker compose
+> docker compose  down
+
+# construlle una imagen a partir de un dockerfile
+# asumiendo que en su misma ruta existe un archivo dockerfile
+> docker build
+> docker build -t NOMBRE_NUEVA_IMAGEN . 
+> docker build -t NOMBRE_NUEVA_IMAGEN RUTA {{ ejm . }}
+
+# para eliminar la red
+> docker network rm 
+> docker network rm NOMBRE_RED
+
+# para crear una red, retorna el id de la red
+# --driver overlay
+# --attachable
+> docker network create
+> docker network create NOMBRE_RED
+
+# muestra todas las redes que existen actualmente
+> docker network ls
+
+# muestra los detalles de una red
+> docker network inspect 
+> docker network inspect NOMBRE_RED
+
+# muestra los datos de una imagen
+> docker inspect 
+> docker inspect NOMBRE_IMAGEN
+
+# unifica a pull,create,start
+# -1ro si no encuentra la imagen la descarga
+# -2do inicia el contendor
+# -3ro la corre 
+# se queda escuchando, a no ser que se use -d con lo que saldra directamente
+# --volumen NOMBRE_VOLUMEN:DIRECCION
+# --network NOMBRE_RED
+> docker run 
+> docker run NOMBRE:ETIQUETA
+> docker run -d -pPUERTO_NUESTRA_PC:PUERTO_INTERNO --name NUEVO_NOMBRE NOMBRE:ETIQUETA -e VARIABLE_ENTORNO1=valor -e VARIABLE_ENTORNO2=valor
+
+# ver los ultmios logs
+> docker logs
+> docker logs --follow   # se queda escuchando
+> docker logs idpiladeletras
+
+# para detener una imagen que esta corriendo
+> docker stop 
+> docker stop idpiladeletras
+
+# para mostrar las imagenes corriendo
+> docker ps 
+
+# para correr una imagen existente
+> docker start 
+> docker start piladeletras
+
+# crear una imagen, retorna un idpiladeletras
+# el --name NUEVO_NOMBRE sirve para referenciarlo en ves del id
+# -pPUERTO_NUESTRA_PC:PUERTO_INTERNO  todo junto ejm:  -p27017:27017
+# --network NOMBRE_RED 
+# -e VARIABLE_ENTORNO1=valor
+> docker create 
+> docker create NOMBRE_IMAGEN_EXISTENTE
+> docker create -pPUERTO_NUESTRA_PC:PUERTO_INTERNO --name NUEVO_NOMBRE NOMBRE_IMAGEN_EXISTENTE --network NOMBRE_RED -e VARIABLE_ENTORNO1=valor -e VARIABLE_ENTORNO2=valor
+> docker container create NOMBRE_IMAGEN_EXISTENTE  #equivalente al comando anterio (el otro es mas corto)
+
+
+# eliminar una imagen
+> docker image rm 
+> docker image rm NOMBRE:ETIQUETA
+
+# descargar una imagen
+> docker pull 
+> docker pull neo4j
+
+# muestra todas las imagenes existentes
+> docker images
+
+
+# se conecta a esta imagen
+docker exec -it NOMBRE_IMAGEN ash
+
+# para conectar una imagen corriendo con una red
+docker network connect NOMBRE_REDNOMBRE_IMAGEN
+
 docker-compose up
 docker run -p 8000:8000 carpeta/carpeta
 docker run -p 8000:8000 carpeta/carpeta -v /dire/carpeta/nueva/:/ 

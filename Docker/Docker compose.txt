@@ -1,0 +1,94 @@
+# version de docker compose
+version:"3.9"
+
+# se van a poner los contenedores
+# represntados por los nombres que se les va a signar, (los dominios)
+services:
+	contenedor_1:
+		# si se quiere imponer alguna politica de reinicio
+		restar: always
+		# si es el contendedor que se va a construir 
+		# puede incicarse la ruta hacia el dockerfile
+		build: .
+		environment:
+			- VARIABLE_ENTORNO=valor
+			- VARIABLE_ENTORNO=valor
+		ports:
+			- "PUERTO_NUESTRA_PC:PUERTO_INTERNO"
+			- "PUERTO_NUESTRA_PC:PUERTO_INTERNO"
+		# para indicar que conendor el actual puede mapear
+		# osea para indicarle que se va a cominar con el
+		links:
+			- contenedor_2
+		volumes:
+			#mongo
+			- nombre-volumen1:/data/db
+			#postgres
+			- nombre-volumen2:/var/lib/postgresql/data/
+			#mysql
+			- nombre-volumen3:/var/lib/mysql
+			
+		# ---------------
+		#	si se esta en un anviente de desarrollo
+		#	osea con los archivos docker-compose-dev.yml y Dockerfile.dev
+		build:
+			context: .
+			dockerfile: Dockerfile.dev
+		volumes:
+			- .:/home/app     # dire a tu carpeta dentro del contendor
+		# ---------------
+		
+		
+	contenedor_2:
+		...
+
+
+# Volumenes
+# 	* 	anonimo: solo indicas la ruta
+# 	* 	anifitrion o host: tu decides que carpetas montar y donde montarlo
+# 	* 	nombrado: como el anonimo pero lo puedes referenciar
+
+volumes:
+	# el contenedor que tiene declarado algun volumen
+	nombre-volumen1:
+	nombre-volumen2:
+	
+#drivers network
+#	*	bridge:  por defecto, entre tu interfas de red, el que pasa todo el trafico
+				Se pueden conectar todos los contenedores que usen el mismo demonio de docker
+				Si queremos que se comuniquen con el exterior podemos enrutarlos con IPtables
+					o usar el driver overlay
+#	*	host:  bindea todos los puertos en tu maquina, los pasa directo al contenedot y usa
+#				la misma ip de tu maquina
+				Es el mas peligroso e inseguro
+				Borra el aislamiento entre el contenedor y la maquina donde correo el contenedor
+				Usaremos la red del servidor
+				El contenedor no va a tener ip porque usaremos la Ip del servidor
+				El mapeo de puertos con -p no funciona porque usamos la ip del servidor
+#	*	overlay: sirve para crear redes virtuales entre los contenedores, entonces puedes
+#					tener la misma red entre varios nodos, esos es util si haces docker swap
+#					docker swap es un orquestador de docker que sirve para crear como servicios
+#					entoces esos servicios se asignan contenedores y esos contenedores se van 
+#					a diferentes nodos, cuando haces un overlay puedes hacer que todos esos
+#					contenedores que estan en diferentes nodos corran sobre la misma red de
+#					esa forma ellos se pueden comunicar sin problemas entre ellos
+#					Eso es lo importante que se puedan comunicar entre ellos estando en
+#					diferentes nodos
+				Se utliza con docker swarm
+					docker swarm es capaz de unir varios servidores usando docker
+					teniendo la capacidad de desplegar una mimsa imagen en varios servidores
+						a la ves
+					Contenedores en diferentes servidores swarm podran comunicarse entre si,
+						entre otros contenedores o que se comuniquen con otros contenedores standalone
+#		
+#	*	macvlan: te permite asignar una direccion mac a un contendedor de esa forma puedes 
+#					obtener el contendedor corriendo en la red como si fuera otro maquina
+#				puede tambier tener una ip asignado por el bcp?
+#	*	none: utli si tienes algun job que genera algun archivo y lo unico que hace es 
+#				generalo y mandarlo a un volumen y por alguna razon no necesitas red
+
+#	Politicas de reinicio
+# 	*	"no": nunca reinicia, ni si el contendedor para o tiene fallos
+#	*	always: si el contendedor se detiene por alguna razon simpre intenta reiniciar
+#	*	on-failure: son se reinicia si se detiene por algun error
+#	*	unless-stopped: siempre reinicia a menos que los desarrolladores lo manden a detener
