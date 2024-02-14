@@ -8,6 +8,7 @@ pylint .
 
 //para instalar el insalador de pip
 python.exe -m pip install --upgrade pip
+python -m pip install --upgrade pip 
 
 //poner paquete en el directorio princiapl de pyton, 1ro estar en cmd dentro de dist
 pip3 install 
@@ -43,6 +44,9 @@ python -m compileall
 
 //instalar en cascada las librerias de un proyecto teniedo el requirements.txt
 CP> pip install -r requirements.txt
+
+//ver las librerias instaladas
+> pip list
 
 //Para instalar el creador de entornos virtuales
 pip install virtualenv

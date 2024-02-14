@@ -28,6 +28,8 @@ services:
 			#mysql
 			- nombre-volumen3:/var/lib/mysql
 			
+			
+			
 		# ---------------
 		#	si se esta en un anviente de desarrollo
 		#	osea con los archivos docker-compose-dev.yml y Dockerfile.dev
@@ -35,6 +37,12 @@ services:
 			context: .
 			dockerfile: Dockerfile.dev
 		volumes:
+			#para dev con Node,React ...
+			- /TU_CARPETA_EN_LA_IMAGEN/node_modules
+			- /app/node_modules
+			#para dev, va despues de lo anterior
+			- .:TU_CARPETA_EN_LA_IMAGEN
+			- .:/app
 			- .:/home/app     # dire a tu carpeta dentro del contendor
 		# ---------------
 		

@@ -1,6 +1,13 @@
 # para comunicarse entre contenedores cuando se encuentran dentro de una misma red
 # es a trabes del {{ nombre del contenedor }} que va a representar a su dominio
 
+# para entrar a la consola de una imagen
+> docker exec -it idpiladeletras sh
+
+# para ejecutar un comando en una imagen que este corriendo
+> docker exec -it idpiladeletras
+> docker exec -it idpiladeletras COMANDO1 ARG1 ARG2
+
 # para mostrar los estados de los conjuntos (recordar que puede aver mas de un archivo)
 > docker-compose ps 
 
@@ -48,6 +55,7 @@
 > docker build
 > docker build -t NOMBRE_NUEVA_IMAGEN . 
 > docker build -t NOMBRE_NUEVA_IMAGEN RUTA {{ ejm . }}
+> docker build -f NOMBRE_DOKERFILE .  
 
 # para eliminar la red
 > docker network rm 
@@ -77,6 +85,10 @@
 # se queda escuchando, a no ser que se use -d con lo que saldra directamente
 # --volumen NOMBRE_VOLUMEN:DIRECCION
 # --network NOMBRE_RED
+# -v (pwd):/app      #esto es solo para git bach
+# -it te permite interactuar con la consola si es necesario al final de la ejecucion
+# al final de todo se pueden agregar comandos que se vallan a ejecutar inmediatamente
+#		ejm:  docker run idimangen npm run test
 > docker run 
 > docker run NOMBRE:ETIQUETA
 > docker run -d -pPUERTO_NUESTRA_PC:PUERTO_INTERNO --name NUEVO_NOMBRE NOMBRE:ETIQUETA -e VARIABLE_ENTORNO1=valor -e VARIABLE_ENTORNO2=valor
@@ -163,3 +175,8 @@ error: externally-managed-environment
 error: externally-managed-environment in RUN python3 -m ensurepip  con dockerfile
 
 alpine error: externally-managed-environment 
+
+docker run -p6379:6379 --name redis_celerity redis:alpine
+docker run -p5672:5672 --name rabbitmq_celerity rabbitmq:3
+
+docker exec -it django sh
