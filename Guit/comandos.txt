@@ -120,3 +120,8 @@ gitignore
 
 nombre archivo o carpeta
 
+
+
+// Revertir el estado a un commit y afectar al repositorio
+1ro-> git reset --hard <commit>
+2do-> git push -f 
