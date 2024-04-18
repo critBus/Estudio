@@ -70,6 +70,9 @@ CP> pip freeze > requirements.txt
 //para instalar los requerimientos
 CP> pip install -r requirements.txt
 
+//ver librerias instaladas
+> pip list
+
 //Django Python 3.1 ******************************************
 
 //Para crear un proyecto se localiza en consola la carpeta donde se creara la carpeta del proyecto (CP)

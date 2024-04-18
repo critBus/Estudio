@@ -1,6 +1,8 @@
 # para comunicarse entre contenedores cuando se encuentran dentro de una misma red
 # es a trabes del {{ nombre del contenedor }} que va a representar a su dominio
 
+
+
 # para entrar a la consola de una imagen
 > docker exec -it idpiladeletras sh
 
@@ -8,7 +10,7 @@
 > docker exec -it idpiladeletras
 > docker exec -it idpiladeletras COMANDO1 ARG1 ARG2
 
-# para mostrar los estados de los conjuntos (recordar que puede aver mas de un archivo)
+# para mostrar los estados de los conjuntos (recordar que puede haber mas de un archivo)
 > docker-compose ps 
 
 # para salir de un swarm (siendo worker)
@@ -180,3 +182,7 @@ docker run -p6379:6379 --name redis_celerity redis:alpine
 docker run -p5672:5672 --name rabbitmq_celerity rabbitmq:3
 
 docker exec -it django sh
+
+
+
+#> docker attach idpiladeletras

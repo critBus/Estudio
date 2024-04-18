@@ -1,0 +1,2 @@
+# lista todos los subprocesos
+> ps 

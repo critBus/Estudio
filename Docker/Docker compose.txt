@@ -27,11 +27,12 @@ services:
 			- nombre-volumen2:/var/lib/postgresql/data/
 			#mysql
 			- nombre-volumen3:/var/lib/mysql
-			
+		# si se desea crear o sobrescribir la entrada (comando cmd incial)
+		command: ["comando", "arg1", "arg2..."]
 			
 			
 		# ---------------
-		#	si se esta en un anviente de desarrollo
+		#	si se esta en un Ambiente  de desarrollo
 		#	osea con los archivos docker-compose-dev.yml y Dockerfile.dev
 		build:
 			context: .

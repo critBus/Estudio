@@ -1,6 +1,8 @@
 # la imagen padre
 FROM NOMBRE:ETIQUETA
 
+
+
 # para crear la carpeta en la que se van a encotrar los archivos de tu app
 RUN mkdir -p /direccion_a_tu_carpeta_principal_a_crear
 RUN mkdir -p /home/app
@@ -25,3 +27,28 @@ EXPOSE 3000
 CMD ["comando1","arg1","arg2"]
 CMD ["node","/home/app/index.js"]
 CMD ["nodemon","index.js"]
+
+
+
+
+# La instrucción AS en Docker se utiliza en la construcción de imágenes multi-etapa.
+# la palabra NOMBRE_FASE es un alias para la etapa de construcción específica.
+# En una construcción de múltiples etapas, puedes tener varias etapas FROM en tu Dockerfile. 
+# Cada FROM puede usar un alias diferente (en este caso, NOMBRE_FASE) y puedes copiar artefactos 
+# de una etapa a otra, lo que te permite separar las etapas de construcción y despliegue en tu 
+# Dockerfile.
+# Por ejemplo, podrías tener una etapa donde construyes tu aplicación y otra etapa donde corres
+# tu aplicación. En la etapa de construcción, puedes tener todas las dependencias necesarias 
+# para construir tu aplicación (compiladores, bibliotecas de enlace, etc.), y en la etapa de 
+# ejecución, solo necesitas las dependencias para ejecutar tu aplicación. Esto puede ayudar a 
+# mantener tus imágenes finales de Docker pequeñas y limpias.
+# Se usa junto a COPY --from=NOMBRE_FASE /carpeta /carpeta  # esto en la segunda etapa
+FROM NOMBRE:ETIQUETA AS NOMBRE_FASE
+
+ejem:
+-	FROM node:alpine as builder
+-	WORKDIR '/app'
+-	COPY package.json
+-	RUN npm install
+-	COPY . .
+-	RUN npm run build
