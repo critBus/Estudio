@@ -1,0 +1,68 @@
+# suponiendo que es un carpeta al mismo nivel de los demas proyectos docker
+# su configuracion va a ser a traves de un archivo 'default.conf'
+# - nombre_carpeta_proyecto1/
+# - nombre_carpeta_proyecto2/
+# - carpeta_nginx/default.conf
+
+# va a contener los nombres y configuracion de todo los proyectos docker desplegados
+# por cada uno, se define el puerto interno al que se redirige, tener en cuenta por cada
+# proyecto de docker cuales puertos extan espuestos
+upstream nombre_carpeta_i {
+	server nombre_carpeta_i:PUERTO;
+}
+
+
+#luego se configura el proxy
+server {
+	listen 80;  # PUERTO_INTERNO_EXPUESTO_NGINX
+	
+	#por cada proyecto docker se decide que url sera redirigia a el
+	# ejemplo '/' o '/api', no se ponen las comillas y siempre debe de haber uno con solo /
+	location / {
+		proxy_pass http://nombre_carpeta_proyecto1;
+	}
+	location /agregado {
+		# como este tiene un agregado a la url '/agregado' en este caso '/api'
+		# y puede que el proyecto docker internamente no responda a la url con este agregado
+		# hay que quitarselo internamente
+		rewrite /agregado/(.*) /$1 break;
+		proxy_pass http://nombre_carpeta_proyecto2;
+	}
+	
+	# Si hay una conexion websocket
+	location /sockjs-node {
+		proxy_pass http://nombre_carpeta_backend;
+		proxy_http_version 1.1;
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection "Upgrade";
+	}
+}
+
+
+# su archivo Dockerfile.dev
+# - carpeta_nginx/Dockerfile.dev
+FROM nginx
+COPY ./default.conf /etc/nfinx/conf.d/default.conf
+
+# en el docker-compose.yml
+services:
+	carpeta_nginx: # si estas usando multiples carpetas, este es el nombre de la carpeta de nginx
+		restart: always
+		build:
+			dockerfile: Dockerfile.dev
+			context: ./carpeta_nginx
+		ports:
+			- 'PUERTO_EXPUESTO:80' # PUERTO_EXPUESTO:PUERTO_INTERNO_EXPUESTO_NGINX
+			
+#dentro de un proyecto react o frontend hay que tener algunas cofiguraciones para nginx
+# - carpeta_proyecto_frontend/nginx/default.conf
+# estas configuraciones suelen estar relacionadas a la ubicacion del baquend en la red
+# es nombre que se le va a dar al host, luego puede ser utilizado en el aws
+nombre_carpeta_backend {
+	listen PUERTO_BACKEN;
+	location / {
+		root /usr/share/nginx/html;
+		index index.html index.html;
+	}
+}
+		

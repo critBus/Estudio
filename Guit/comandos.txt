@@ -1,8 +1,23 @@
-los pasos son
-1-add .  		//agrega los cambios
-2-commit -m	""	// los etiqueta
-3-push			//los envia a la nube 
- 
+los pasos al crear un repositorio desde 0
+1-> git init
+2-> git add .
+3-> git commit -m "initial commit"
+4-> git remote add origin git@gitlab.com:group18323137/project1.git 
+5-> git push origin master
+
+los pasos para subir actualizaciones son
+1-> git add .  		//agrega los cambios
+2-> git commit -m	""	// los etiqueta
+3-> git push			//los envia a la nube 
+
+los pasos para actualizar un repositorio
+1-> git pull
+
+los pasos para crear una rama
+1-> git checkout -b NOMBRE_NUEVA_RAMA    // crea una nueva rama
+2-> git add .
+3-> git commit -m	""	
+4-> git push origin NOMBRE_NUEVA_RAMA
 
 //crear un repositorio
 > git init 
@@ -73,6 +88,9 @@ los pasos son
 
 //para hacer los mismo pero eliminando los archivos que no existen
 > git reset --hard ALEATORIEDAD
+
+//para eliminar los archivos que no pertenecen a este commit
+> git clean -fd
 
 // en caso de arrpentirse del --hard
 //para ver todos los archivos y cambios de los commit

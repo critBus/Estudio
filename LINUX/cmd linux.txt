@@ -1,2 +1,8 @@
 # lista todos los subprocesos
 > ps 
+
+> mkdir NOMBRE_CARPETA
+
+# para abrir VC, funciona en GIT console
+> code .
+

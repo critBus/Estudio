@@ -35,13 +35,14 @@ services:
 		#	si se esta en un Ambiente  de desarrollo
 		#	osea con los archivos docker-compose-dev.yml y Dockerfile.dev
 		build:
-			context: .
+			context: .  # o ./NOMBRE_CARPETA tiene que indicar donde esta el dockerfile
 			dockerfile: Dockerfile.dev
 		volumes:
 			#para dev con Node,React ...
 			- /TU_CARPETA_EN_LA_IMAGEN/node_modules
 			- /app/node_modules
 			#para dev, va despues de lo anterior
+			- ./TU_CARPETA_EN_EL_DISCO:TU_CARPETA_EN_LA_IMAGEN
 			- .:TU_CARPETA_EN_LA_IMAGEN
 			- .:/app
 			- .:/home/app     # dire a tu carpeta dentro del contendor

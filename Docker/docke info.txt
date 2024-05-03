@@ -43,7 +43,10 @@ CMD ["nodemon","index.js"]
 # ejecución, solo necesitas las dependencias para ejecutar tu aplicación. Esto puede ayudar a 
 # mantener tus imágenes finales de Docker pequeñas y limpias.
 # Se usa junto a COPY --from=NOMBRE_FASE /carpeta /carpeta  # esto en la segunda etapa
-FROM NOMBRE:ETIQUETA AS NOMBRE_FASE
+# FROM NOMBRE:ETIQUETA AS NOMBRE_FASE
+# al terminar > docker build .
+# y luego exponer el puerto, en este caso
+# > docker run -p 8080:80 idpiladeletras
 
 ejem:
 -	FROM node:alpine as builder
@@ -52,3 +55,7 @@ ejem:
 -	RUN npm install
 -	COPY . .
 -	RUN npm run build
+-
+-	FROM nginx
+-	EXPOSE 80
+-	COPY --from=builder /app/build /usr/share/nginx/html

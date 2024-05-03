@@ -1,0 +1,28 @@
+
+//Crear aplicacion
+npx create-react-app CARPETA_PROYECTO
+npx create-react-app 
+yarn create react-app CARPETA_PROYECTO
+yarn create react-app 
+
+//Ejecutar
+CP> npm start
+
+
+
+npm install
+
+
+yarn
+
+//se deverian instalar 
+>npm install -g serve
+
+yarn add serve
+
+-- instalar --
+npm i react-router-dom
+yarn add react-router-dom
+yarn add node-sass
+yarn add styled-components
+yarn add sqlite3

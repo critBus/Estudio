@@ -1,0 +1,75 @@
+# https://travis-ci.com/
+
+# se crea un archivo 
+.travis.yml
+
+# en algun punto se van a utilizar variables de entorno
+# estas se definen en travis.com para tu proyecto en expesifico
+# se usan $VARIABLE
+
+# se pone para indicar que los siguientes comandos necesitan
+# permisos de administrador
+sudo: required
+
+# se le indica que servicios se necesitan que esten preinstalados
+services:
+ - docker # con esto si no existe travis instala docker
+
+# va a tener una serie de comandos que se van a instalar antes de 
+# que se ejecunten las pruebas
+# por ejemplo mandar al build de docker
+before_install:
+ - docker build -t NOMBRE_IMAGEN -f Dockerfile.dev .
+ # o tambien podrida ser si fuera que esta construllento el test de una carpeta 
+ - docker build -t NOMBRE_IMAGEN -f ./carpeta/Dockerfile.dev ./carpeta
+
+
+script:
+	# se lanza el comando de prueba ejemplo 
+	# el -- --coverage es para que el script de cierre al terminar y retorne 0 si 
+	#	el test fue un exito
+ - docker run NOMBRE_IMAGEN npm run test -- --coverage
+
+# para luego de que se pasaron con exito los test
+after_success:
+ - docker build -t NOMBRE_IMAGEN_FRONTEND_BUILD  ./carpeta_frontend
+ - docker build -t NOMBRE_IMAGEN_NGINX_BUILD  ./carpeta_nginx
+ - docker build -t NOMBRE_IMAGEN_BACKEND_BUILD  ./carpeta_backend
+ - docker build -t NOMBRE_IMAGEN_WORKER_BUILD  ./carpeta_worker
+ # nos logueamos en docker
+ - echo "$DOCKER_PASSWORD" | docker loguin -u "$DOCKER_ID" --password-stdin
+ # sube las imagenes a docker
+ - docker push NOMBRE_IMAGEN_FRONTEND_BUILD
+ - docker push NOMBRE_IMAGEN_NGINX_BUILD
+ - docker push NOMBRE_IMAGEN_BACKEND_BUILD
+ - docker push NOMBRE_IMAGEN_WORKER_BUILD
+
+
+# para este comando ya se debe estar seguro de que proveedor se utilizar PROVEEDOR
+#	- elasticbeantalk  # aparentemente de aws
+# tambien se debe tener clara la region del servidor, se puede conocer por 
+# la url que nos provee REGION_SERVIDOR
+#	- us-west-2
+# se debe conocer el nombre de la app configurado en el servidor NOMBRE_APP
+# se debe conocer el nombre del entorno configurado en el servidor NOMBRE_ENV
+# se debe conocer el nombre del archvivo s3 configurado en el servidor NOMBRE_S3
+# 		este es como que el servidor toma todos los archivos necesarios para
+#		el despliegue y los junta en un zip con un nombre comun
+deploy:
+ provider: PROVEEDOR
+ region: "REGION_SERVIDOR"
+ app: "NOMBRE_APP"
+ env: "NOMBRE_ENV"
+ bucket_name: "NOMBRE_S3"
+ bucket_path: "NOMBRE_APP"
+ on:
+  brach: "NOMBRE_RAMA_GIT"   #ejemplo main o master
+ access_key_id: $AWS_ACCESS_KEY
+ secret_access_key:
+  secure: $AWS_SECRET_KEY
+ 
+
+
+-- parece que no --
+# dentro de el se pone como primera linea 
+.travis.yml		# coincide con el nombre del archivo

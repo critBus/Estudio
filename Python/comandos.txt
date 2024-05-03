@@ -64,6 +64,11 @@ CARPETA ENTORNOS>NOMBRE_ENTORNO\Scripts\activate.bat
 CARPETA ENTORNOS>env36\Scripts\activate.bat
 CARPETA ENTORNOS>.venv\Scripts\activate.bat
 
+//en linux luego de un
+1ro> sudo apt install python3-venv
+2do> python3 -m venv .venv
+3ro> source .venv/bin/activate
+
 //para crear requerimientos 
 CP> pip freeze > requirements.txt
 

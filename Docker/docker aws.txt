@@ -1,0 +1,18 @@
+# generalmente hay que configurar un archivo
+# Dockerrun.aws.json
+{
+	"AWSEBDockerrunVersion":2,
+	"containerDefinitions":[
+		{
+			# es el nombre que se le dio al host en el nginx/default.conf
+			"name":"NOMBRE_FRONTEND",
+			"image":"ID_DOCKER/NOMBRE_IMAGEN_GENERAL",
+			"host":"NOMBRE_FRONTEND" # suele ser el nombre del servicio en el compose,
+			
+			# si es esencial, osea si este contenedor falla, apaga al resto de contenedores
+			# el true se generalmente para nginx
+			"essential":false 
+		}
+		
+	]
+}
