@@ -75,6 +75,9 @@ CP> pip freeze > requirements.txt
 //para instalar los requerimientos
 CP> pip install -r requirements.txt
 
+//actualizar una libreria
+> pip install -U flask
+
 //ver librerias instaladas
 > pip list
 

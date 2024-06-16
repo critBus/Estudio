@@ -19,6 +19,8 @@ los pasos para crear una rama
 3-> git commit -m	""	
 4-> git push origin NOMBRE_NUEVA_RAMA
 
+git push origin servidor20240501
+
 //crear un repositorio
 > git init 
 
@@ -132,6 +134,9 @@ los pasos para crear una rama
 
 //para poder subir  los cambios de los tag
 > git push --tags
+
+// ver el repositorio al que se esta apuntando
+> git remote -v
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++
 gitignore
