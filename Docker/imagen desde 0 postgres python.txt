@@ -1,0 +1,45 @@
+sudo apt update
+# si no se instalan porobar por separado
+sudo apt install python3-pip python3-dev libpq-dev postgresql postgresql-contrib nginx curl git python3-venv nano ufw
+# estos son por separado
+apt install python3-pip
+apt install python3-dev
+apt install libpq-dev
+apt install postgresql
+apt install postgresql-contrib
+apt install nginx
+apt install curl
+apt install git
+apt install python3-venv
+apt install nano
+apt install ufw
+
+
+# para acceder a postgres
+service postgresql start
+su - postgres
+psql
+CREATE DATABASE myproject;
+CREATE USER myprojectuser WITH PASSWORD 'password';
+ALTER ROLE myprojectuser SET client_encoding TO 'utf8';
+ALTER ROLE myprojectuser SET default_transaction_isolation TO 'read committed';
+ALTER ROLE myprojectuser SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE myproject TO myprojectuser;
+\c myproject postgres
+GRANT ALL ON SCHEMA public TO myprojectuser;
+\q
+service postgresql status
+
+
+#para crear en el entorno virtual
+python3 -m venv virtualenv
+source virtualenv/bin/activate
+
+
+# guardar los cambios realizados
+# 1ro- se buscan las imagenes
+docker images
+# 2do- se guardan los cambios en una nueva imagen
+docker commit idimagenanterior NOMBRE_NUEVA_IMAGEN
+# 3ro- abrir la imagen actual
+docker run -it NOMBRE_NUEVA_IMAGEN bash
