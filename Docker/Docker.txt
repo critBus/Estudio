@@ -186,3 +186,5 @@ docker exec -it django sh
 
 
 #> docker attach idpiladeletras
+
+
