@@ -1,4 +1,8 @@
 //formatear el codigo 
+ruff check  --unsafe-fixes --fix
+ruff format .
+ruff check . --select I --fix
+ruff check --fix
 black .
 isort .
 pylint .
