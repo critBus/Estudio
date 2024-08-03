@@ -52,8 +52,10 @@ CP> pip install -r requirements.txt
 //ver las librerias instaladas
 > pip list
 
-//Para instalar el creador de entornos virtuales
-pip install virtualenv
+//Para instalar el creador de entornos virtuales (en caso de que no funcione por la via normal)
+> pip install virtualenv
+> virtualenv .venv
+> 
 
 sudo apt install python3-venv
 
