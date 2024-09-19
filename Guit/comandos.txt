@@ -19,6 +19,15 @@ los pasos para crear una rama
 3-> git commit -m	""	
 4-> git push origin NOMBRE_NUEVA_RAMA
 
+
+// !! Antes de PR siempre -> https://youtu.be/OXtdxHTh2oY
+1-> git rebase main
+2-> git add archivoConflito # esto luego de solocuionar el conflicto si existe
+3-> git rebase --continue  # si existio conflito lanzar este comando luego de solucionarlo
+4-> :wq   # apretar esc o ':' y poner esto al final de la consola para guardar [necesario solo en caso de conflicto]
+5-> # fijarse si quedaron archivos sueltos y hacer commit en ese caso
+6-> git push  # subir los cambios resultantes del rebase
+
 git push origin servidor20240501
 
 //crear un repositorio
@@ -29,7 +38,7 @@ git push origin servidor20240501
 //baja y actualiza un proyecto
 > git pull
 
-//comprueba culaes archivos se modificaron
+//comprueba cuales archivos se modificaron
 > git status 
 > git status -s
 //los archivos en rojo no se han agregado

@@ -179,3 +179,10 @@ pip install flask_restful flask_sqlalchemy flask_migrate flask_marshmallow marsh
 //Poner las variables necesarias
 CP> set FLASK_APP=NOMBRE_PRINCIPAL.py
 CP> set FLASK_ENV=development
+
+//ejecutar servidor  (NOMBRE DEL ARCHIVO py que contiene app sin poner la extencion [main.py])
+> flask --app main run 
+> flask --app NOMBRE_CON_APP_ARCHVIO run 
+
+// ejecucion modo debug (muestra los errores y se actualiza solo)
+> flask --app main --debug run 
