@@ -1,0 +1,34 @@
+//insalar flask  (~como django)
+pip install flask
+
+//lo necesario para flask (necesita lo anterior)
+pip install flask_restful flask_sqlalchemy flask_migrate flask_marshmallow marshmallow-sqlalchemy
+
+//Poner las variables necesarias
+CP> set FLASK_APP=NOMBRE_PRINCIPAL.py
+CP> set FLASK_ENV=development
+
+//ejecutar servidor  (NOMBRE DEL ARCHIVO py que contiene app sin poner la extencion [main.py])
+> flask --app main run 
+> flask --app NOMBRE_CON_APP_ARCHVIO run 
+
+// ejecucion modo debug (muestra los errores y se actualiza solo)
+> flask --app main --debug run 
+
+// para usar mongodb
+> pip install pymongo[srv]
+
+pip install python-dotenv
+pip install gunicorn
+pip install flask-wtf
+pip install -U Flask-SQLAlchemy
+pip install flask-testing
+pip install pytest
+pip install celery
+pip install Flask-Migrate
+pip install Flask-CeleryExt
+pip install flask-restx
+pip install apispec
+pip install apispec-webframeworks
+pip install marshmallow
+pip install 
