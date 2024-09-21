@@ -15,6 +15,18 @@ CP> set FLASK_ENV=development
 // ejecucion modo debug (muestra los errores y se actualiza solo)
 > flask --app main --debug run 
 
+// para usar migraciones
+1ro> pip install Flask-Migrate
+2do> flask --app main db init   	# inicializa el directorio de migraciones [vacio] [una sola vez, almacena el orden entre las migraciones]
+3ro> flask --app main db migrate	# crear el archivo con la descripcion de la bd [repetir cada vez que se realize un cambio]
+4to> flask --app main db upgrade	# aplica los cambios
+5to> flask --app main db downgrade	# revierte la ultima migracion [casi nunca se utliza]
+
+// para usar test
+> pip install flask-testing
+> flask --app main test
+
+
 // para usar mongodb
 > pip install pymongo[srv]
 
@@ -31,4 +43,4 @@ pip install flask-restx
 pip install apispec
 pip install apispec-webframeworks
 pip install marshmallow
-pip install 
+pip install passlib
