@@ -58,6 +58,11 @@ pip install marshmallow
 pip install passlib
 pip install flask_cors
 pip install pyodbc
-pip install 
-pip install 
-pip install 
+pip install Flask-Login
+pip install flask-mail
+pip install Flask-Script
+pip install argon2-cffi
+pip install flask-security
+celery -A make_celery worker --loglevel INFO --pool=solo
+
+https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server?view=sql-server-ver16
