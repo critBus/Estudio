@@ -25,7 +25,7 @@ los pasos para crear una rama
 2-> git add archivoConflito # esto luego de solocuionar el conflicto si existe
 3-> git rebase --continue  # si existio conflito lanzar este comando luego de solucionarlo
 4-> :wq   # apretar esc o ':' y poner esto al final de la consola para guardar [necesario solo en caso de conflicto]
-5-> # fijarse si quedaron archivos sueltos y hacer commit en ese caso
+5-> # fijarse si quedaron archivos sueltos y hacer commit en ese caso [revisar github de escritorio]
 6-> git push  # subir los cambios resultantes del rebase
 
 git push origin servidor20240501
