@@ -188,3 +188,13 @@ docker exec -it django sh
 #> docker attach idpiladeletras
 
 
+# problemas con puertos fantasmas (windos)
+# ejecutar como administrador cmd
+> net stop winnat
+> docker start ...
+> net start winnat
+
+
+# buscar un archivo
+> docker exec -it nombre-imagen /bin/bash
+> sudo find / -name 'nombredearchivo'
