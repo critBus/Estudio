@@ -198,3 +198,6 @@ docker exec -it django sh
 # buscar un archivo
 > docker exec -it nombre-imagen /bin/bash
 > sudo find / -name 'nombredearchivo'
+
+# copiar una archivo
+> docker cp ruta/archivo nombre-imagen:/ruta/carpeta/destino
