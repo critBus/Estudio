@@ -24,6 +24,9 @@ pip3 uninstall
 //despues de uninstall un espacio nombre del paquete
 pip3 uninstall Paquete
 
+//actualizar una libreria
+pip install --upgrade nombre_de_la_libreria
+
 //para crear .exe
 pyinstaller --windowed --onefile --icon=./logo.ico 
 pyinstaller --windowed --onefile --icon=Direccion.ico NombreArchivo.py
