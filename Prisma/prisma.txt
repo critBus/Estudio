@@ -1,5 +1,6 @@
 // instalar
 pnpm install prisma --save-dev
+pnpm install tsx --save-dev
 pnpm install @prisma/extension-accelerate
 pnpm install @prisma/client
 
@@ -33,6 +34,7 @@ npx prisma migrate dev --name
 npx prisma migrate dev --name NOMBRE_MIGRACION
 
 // aplicar migraciones (clonaste el proyecto y no tienes la bd)
+// este comando tambien aplica el seed de existir
 npx prisma migrate dev
 
 
@@ -41,3 +43,12 @@ pnpm prisma studio
 
 // para ejecutar el studio sin internet
 PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1
+
+// seed
+// tener un archivo prisma/seed.ts
+// modifcar el package.json
+ "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+// ejecutar el seed
+npx prisma db seed
