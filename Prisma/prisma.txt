@@ -1,0 +1,43 @@
+// instalar
+pnpm install prisma --save-dev
+pnpm install @prisma/extension-accelerate
+pnpm install @prisma/client
+
+// 0- inicializar proyecto vacio, crea el archivo de esquemas prisma
+npx prisma init --output ../src/app/generated/prisma
+
+//config postgres  prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// o sqlite
+// env DATABASE_URL="file:./dev.db"
+datasource db {
+  // provider = "postgresql"
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Crear la base de datos y aplicar migraciones
+npx prisma migrate dev --name init
+
+// Nueva migracion
+npx prisma migrate dev --name 
+npx prisma migrate dev --name NOMBRE_MIGRACION
+
+// aplicar migraciones (clonaste el proyecto y no tienes la bd)
+npx prisma migrate dev
+
+
+// abrir el studio
+pnpm prisma studio
+
+// para ejecutar el studio sin internet
+PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1
