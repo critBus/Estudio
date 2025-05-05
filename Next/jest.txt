@@ -1,3 +1,7 @@
+// instalaciones necesarias
+pnpm install --save-dev @testing-library/react @testing-library/dom @types/react @types/react-dom
+pnpm install -D jest jest-environment-jsdom @testing-library/react @testing-library/dom @testing-library/jest-dom ts-node @types/jest
+pnpm install ts-jest
 
 // crear el proyecto test
 pnpm create jest@latest
