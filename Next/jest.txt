@@ -2,7 +2,14 @@
 pnpm install --save-dev @testing-library/react @testing-library/dom @types/react @types/react-dom
 pnpm install -D jest jest-environment-jsdom @testing-library/react @testing-library/dom @testing-library/jest-dom ts-node @types/jest
 pnpm install ts-jest
+pnpm install eslint-plugin-jest-dom eslint-plugin-testing-library
 
 // crear el proyecto test
 pnpm create jest@latest
+
+
+// correr un test expecifico
+npx jest 
+npx jest Formulario.test.tsx
+npx jest Homepage.test.tsx
 
