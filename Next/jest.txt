@@ -1,0 +1,4 @@
+
+// crear el proyecto test
+pnpm create jest@latest
+

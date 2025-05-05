@@ -37,13 +37,6 @@ npx prisma migrate dev --name NOMBRE_MIGRACION
 // este comando tambien aplica el seed de existir
 npx prisma migrate dev
 
-
-// abrir el studio
-pnpm prisma studio
-
-// para ejecutar el studio sin internet
-PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1
-
 // seed
 // tener un archivo prisma/seed.ts
 // modifcar el package.json
@@ -52,3 +45,10 @@ PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1
   },
 // ejecutar el seed
 npx prisma db seed
+
+// abrir el studio
+pnpm prisma studio
+
+// para ejecutar el studio sin internet
+PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1
+
