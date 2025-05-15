@@ -1,0 +1,5 @@
+// instalar
+pnpm add next-auth@beta
+
+// crear el secret
+npx auth secret

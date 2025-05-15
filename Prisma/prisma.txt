@@ -5,12 +5,16 @@ pnpm install @prisma/extension-accelerate
 pnpm install @prisma/client
 
 // 0- inicializar proyecto vacio, crea el archivo de esquemas prisma
-npx prisma init --output ../src/app/generated/prisma
+np pxrisma init --output ../src/app/generated/prisma
+
+// en next no usar ouput
+np pxrisma init 
+npx prisma generate
 
 //config postgres  prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/app/generated/prisma"
+  // output   = "../src/app/generated/prisma" // no recomendado en text
 }
 
 datasource db {
