@@ -4,11 +4,15 @@ pnpm install tsx --save-dev
 pnpm install @prisma/extension-accelerate
 pnpm install @prisma/client
 
+//auth
+pnpm install @next-auth/prisma-adapter
+
+
 // 0- inicializar proyecto vacio, crea el archivo de esquemas prisma
-np pxrisma init --output ../src/app/generated/prisma
+npx prisma init --output ../src/app/generated/prisma
 
 // en next no usar ouput
-np pxrisma init 
+npx prisma init 
 npx prisma generate
 
 //config postgres  prisma/schema.prisma
