@@ -5,7 +5,8 @@ pnpm install @prisma/extension-accelerate
 pnpm install @prisma/client
 
 //auth
-pnpm install @next-auth/prisma-adapter
+pnpm add @auth/prisma-adapter
+old - //pnpm install @next-auth/prisma-adapter
 
 
 // 0- inicializar proyecto vacio, crea el archivo de esquemas prisma
@@ -44,6 +45,13 @@ npx prisma migrate dev --name NOMBRE_MIGRACION
 // aplicar migraciones (clonaste el proyecto y no tienes la bd)
 // este comando tambien aplica el seed de existir
 npx prisma migrate dev
+
+// aplica directamente el esquema a la bd sin generar archivos de migracion
+// es para cuando esta comenzando el proyecto 
+npx prisma db push
+
+// resetea la bd, la vacia
+npx prisma migrate reset
 
 // seed
 // tener un archivo prisma/seed.ts
