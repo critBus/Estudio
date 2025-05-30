@@ -85,6 +85,7 @@ export default function Page({ params }: { params: { productId: string } }) {
 ### Agrupación de Rutas
 
 - Las carpetas con nombres entre paréntesis, como `/app/(agrupada)/ruta1`, se ignoran en la URL, pero sus rutas hijas no.
+
 - Ejemplo de estructura:
   
   ```
@@ -92,7 +93,9 @@ export default function Page({ params }: { params: { productId: string } }) {
   /app/(agrupada)/ruta2
   /app/ruta3
   ```
+
 - URLs resultantes:
+  
   - `/ruta1`
   - `/ruta2`
   - `/ruta3`
@@ -104,6 +107,7 @@ export default function Page({ params }: { params: { productId: string } }) {
 ### Rutas Paralelas (`@carpeta`)
 
 - Las rutas paralelas permiten renderizar múltiples componentes en la misma ruta.
+
 - Ejemplo de estructura:
   
   ```
@@ -112,6 +116,7 @@ export default function Page({ params }: { params: { productId: string } }) {
   /ruta/@video/page.tsx
   /ruta/page.tsx
   ```
+
 - El archivo `layout.tsx` combina las rutas paralelas:
 
 ```tsx
@@ -1539,6 +1544,50 @@ export const sendVerificationEmail = async (email: string, token: string) => {
     subject: 'Confirma tu correo',
     html: `<p>Haz clic <a href="${confirmLink}">aquí</a> para confirmar tu correo</p>`,
   });
+};
+```
+
+## Envio de correos con nodemailer
+
+```bash
+pnpm install nodemailer
+pnpm install @types/nodemailer
+```
+
+```javascript
+import nodemailer from "nodemailer";
+const transporter = nodemailer.createTransport({
+  service: "Gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
+}); 
+const sendEmailFree = async ({
+  to,
+  subject,
+  html,
+}: {
+  to: string;
+  subject: string;
+  html: string;
+}) => {
+  console.log({
+    to,
+    subject,
+    html,
+  });
+  if (SENT_EMAIL) {
+    return await transporter.sendMail({
+      from: `"Example Team" <${process.env.GMAIL_USER}>`, // sender address
+      to: to, // list of receivers
+      subject: subject, // Subject line
+      html: html, // html body
+    });
+  }
 };
 ```
 
