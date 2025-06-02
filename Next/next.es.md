@@ -471,8 +471,16 @@ npx prisma init --datasource-provider sqlite
 
 - Configura `.env`:
 
+sqlite
+
 ```env
 DATABASE_URL="file:./dev.db"
+```
+
+postgrest
+
+```env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/prueba_auth?schema=public"
 ```
 
 - Define modelos en `/prisma/schema.prisma`:
