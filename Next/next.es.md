@@ -646,7 +646,7 @@ export default User;
 
 ## Pruebas
 
-### Configuración de Bibliotecas de Pruebas
+### Jest: Configuración de Bibliotecas de Pruebas
 
 - Instala dependencias:
 
@@ -720,10 +720,32 @@ import '@testing-library/jest-dom';
 }
 ```
 
+
+
 - Ejecuta pruebas:
 
 ```bash
 pnpm test
+```
+
+## Secuencialmente
+
+Si estas usando prisma lo mejor es que sea en secuencia y con algun metodo que limpie los datos usando el argumento `--runInBand`
+
+```bash
+npx jest --runInBand
+npx jest NombreTest.test.tsx
+```
+
+O agergandolo en el script 
+
+```json
+{
+  "scripts": {
+    "test": "jest --passWithNoTests --runInBand",
+    "test:watch": "jest --watchAll --runInBand"
+  }
+}
 ```
 
 ### Escribiendo Pruebas
