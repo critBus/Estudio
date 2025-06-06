@@ -720,8 +720,6 @@ import '@testing-library/jest-dom';
 }
 ```
 
-
-
 - Ejecuta pruebas:
 
 ```bash
@@ -1143,6 +1141,77 @@ export default function LocaleSwitcherSelect({
   );
 }
 ```
+
+### Jest Bug
+
+hay problemas en la version 4 de next-intl, asi que lo que a mi me funciono para poder testear el codigo fue usar la version 3.26.5
+
+```bash
+pnpm install next-intl@3.26.5
+```
+
+Lo que cambia es que al layout hay que darle directamente el locale y los mensajes que tocan
+
+```javascript
+export type TypeLocales = "en" | "es";
+export const getLocaleData = async (locale: string | undefined) => {
+  // Validate that the incoming `locale` parameter is valid
+  if (!locale || !routing.locales.includes(locale as TypeLocales)) {
+    locale = routing.defaultLocale;
+  }
+
+  // Import the requested locale's messages and the fallback (English) messages'
+  const localeMessages = (await import(`../../locales/${locale}.json`)).default;
+  const fallbackMessages = (await import(`../../locales/en.json`)).default;
+
+  // Merge locale messages with fallback messages, using fallback if key is missing
+  const mergedMessages = { ...fallbackMessages, ...localeMessages };
+  return {
+    messages: mergedMessages,
+    locale,
+  };
+}; 
+
+```
+
+#### layout
+
+```tsx
+const { messages } = await getLocaleData(locale);
+<NextIntlClientProvider locale={locale} messages={messages}>
+          ....
+</NextIntlClientProvider>
+```
+
+
+
+#### test
+
+Para poder realizar el test es necesario envolver el elemento en el `<NextIntlClientProvider>`
+
+
+
+```tsx
+import { NextIntlClientProvider } from 'next-intl';
+import { createStore } from '@/store';
+import message from '../../../locales/es.json';
+
+const AllProviders = ({ children }: { children: React.ReactNode }) => (
+  <NextIntlClientProvider locale="es" messages={message}>
+    {children}
+  </NextIntlClientProvider>
+);
+```
+
+luego dentro del test
+
+```jsx
+render(<ProductCard product={productCopy} />, {
+      wrapper: AllProviders,
+    });
+```
+
+
 
 ## Autenticación con NextAuth
 
