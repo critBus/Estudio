@@ -32,9 +32,9 @@ lanza el test pero mostrando informacion literalmente visual
 npx playwright test --ui
 ```
 
-![](C:\Users\Rene\AppData\Roaming\marktext\images\2025-06-06-12-14-50-image.png)
+![](.\img_md\2025-06-06-12-14-50-image.png)
 
-![](C:\Users\Rene\AppData\Roaming\marktext\images\2025-06-06-12-18-40-image.png)
+![](.\img_md\2025-06-06-12-18-40-image.png)
 
 # Localizadores
 
@@ -42,17 +42,13 @@ son para obtener una manera de obtener los datos de un elmento para luego hacerl
 
 Para obtenerlo se preciona sobre el boton (circulo) Pick Locator, y se lecciona el elmento a localizar (en este caso el boton blanco), luego en la pestaña de Locator sale el localizador de este elemento seleccionado
 
-![](C:\Users\Rene\AppData\Roaming\marktext\images\2025-06-06-12-23-06-image.png)
-
-
+![](.\img_md\2025-06-06-12-23-06-image.png)
 
 # Simular click (con class)
 
 1- Vamos a almacenar los elementos comunes en una clase
 
 /pages/PaginaAGuardar.ts
-
-
 
 ```typescript
 import { Page, Locator } from "@playwright/test";
@@ -65,8 +61,6 @@ export default class PaginaAGuardar {
     this.botonDeIr = page.getByRole("link", { name: "Ir A Otra" });
   }
 }
-
-
 ```
 
 2- creamos el test
