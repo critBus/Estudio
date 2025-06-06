@@ -32,7 +32,7 @@ lanza el test pero mostrando informacion literalmente visual
 npx playwright test --ui
 ```
 
-![](img_md\2025-06-06-12-14-50-image.jpg)
+![](./img_md/2025-06-06-12-14-50-image.jpg)
 
 ![](./img_md/2025-06-06-12-18-40-image.jpg)
 
@@ -42,7 +42,7 @@ son para obtener una manera de obtener los datos de un elmento para luego hacerl
 
 Para obtenerlo se preciona sobre el boton (circulo) Pick Locator, y se lecciona el elmento a localizar (en este caso el boton blanco), luego en la pestaña de Locator sale el localizador de este elemento seleccionado
 
-![](img_md\2025-06-06-12-23-06-image.jpg)
+![](./img_md/2025-06-06-12-23-06-image.jpg)
 
 # Simular click (con class)
 
