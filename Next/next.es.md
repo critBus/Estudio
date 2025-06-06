@@ -1171,7 +1171,6 @@ export const getLocaleData = async (locale: string | undefined) => {
     locale,
   };
 }; 
-
 ```
 
 #### layout
@@ -1183,13 +1182,9 @@ const { messages } = await getLocaleData(locale);
 </NextIntlClientProvider>
 ```
 
-
-
 #### test
 
 Para poder realizar el test es necesario envolver el elemento en el `<NextIntlClientProvider>`
-
-
 
 ```tsx
 import { NextIntlClientProvider } from 'next-intl';
@@ -1210,8 +1205,6 @@ render(<ProductCard product={productCopy} />, {
       wrapper: AllProviders,
     });
 ```
-
-
 
 ## Autenticación con NextAuth
 
