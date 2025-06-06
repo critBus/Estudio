@@ -426,7 +426,6 @@ pnpm install @hookform/resolvers
 - Define esquemas:
 
 ```tsx
-
 import { z } from 'zod';
 
 const CreateInvoiceSchema = z.object({
@@ -449,8 +448,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 ```
 
-
-
 se obtiene toda la configuracion de zod y los valores inciales
 
 ```typescript
@@ -465,8 +462,6 @@ const {
     },
   });
 ```
-
-
 
 se define el on submit
 
@@ -503,8 +498,6 @@ y luego se pone el boton de submit normal
 ```jsx
 <button type="submit">Send</button>
 ```
-
-
 
 ## Integración con Bases de Datos
 

@@ -73,7 +73,7 @@ import { test, expect } from "@playwright/test";
 const URL = "http://localhost:3000/";
 import PaginaAGuardar from "../pages/PaginaAGuardar";
 let pagina: PaginaAGuardar;
-test("has title", async ({ page }) => {
+test("move to page", async ({ page }) => {
   pagina = new PaginaAGuardar(page);
   await page.goto(URL);
   await paginaLanding.botonDeIr.click();
@@ -83,3 +83,34 @@ test("has title", async ({ page }) => {
 ```
 
 al correr el test con --ui se ve como clickea sobre el boton y se ve la siguiente pagina. Si el boton no hubiese existido daria error con el test fallido
+
+# Multiples paginas
+
+se decalran todas al principio, (en este ejemplo como next se tarda en compilar pusimos entre todos los saltos un espera de 5s)
+
+```typescript
+import { test, expect } from "@playwright/test";
+
+import PaginaLanding from "../pages/PaginaLanding";
+import PaginaSendEmail from "../pages/PaginaSendEmail";
+import PaginaSuccess from "../pages/PaginaSuccess";
+
+const URL = "http://localhost:3000/";
+let paginaLanding: PaginaLanding;
+let paginaForm: PaginaSendEmail;
+let paginaSuccess: PaginaSuccess;
+test("sen email", async ({ page }) => {
+  paginaLanding = new PaginaLanding(page);
+  paginaForm = new PaginaSendEmail(page);
+  paginaSuccess = new PaginaSuccess(page);
+  await page.goto(URL);
+  await paginaLanding.botonDeForm.click();
+  await page.waitForTimeout(5000);
+  expect(page.url()).toBe(`${URL}form`);
+  await paginaForm.inputemail.fill("asd@asd.com");
+  await paginaForm.botonSendEmail.click();
+  await page.waitForTimeout(5000);
+  expect(page.url()).toBe(`${URL}success`);
+  expect(paginaSuccess.successMessage).toBeVisible();
+});
+```
