@@ -153,11 +153,13 @@ Los cambios que rompen compatibilidad se indican con `!` después del tipo y un 
   ```
   feat(login): agregar autenticación con Google
   ```
+
 - Corrección de error:
   
   ```
   fix(api): corregir error en endpoint de usuarios
   ```
+
 - Cambio de ruptura:
   
   ```
