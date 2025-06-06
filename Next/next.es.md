@@ -413,18 +413,19 @@ export default function FormExample() {
 }
 ```
 
-## Validación con Zod
+## Validación con Zod y  react-hook-form
 
-- Instala Zod:
+- Instala Zod y react-hook-form:
 
 ```bash
 pnpm install zod
+pnpm install react-hook-form
+pnpm install @hookform/resolvers
 ```
 
 - Define esquemas:
 
 ```tsx
-'use server';
 
 import { z } from 'zod';
 
@@ -440,6 +441,70 @@ const CreateInvoiceFormSchema = CreateInvoiceSchema.omit({
 
 type TypeSchemaForm = z.infer<typeof CreateInvoiceFormSchema>;
 ```
+
+luego en la pagina
+
+```typescript
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+```
+
+
+
+se obtiene toda la configuracion de zod y los valores inciales
+
+```typescript
+const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<TypeSchemaEmail>({
+    resolver: zodResolver(EmailSchema),
+    defaultValues: {
+      email: "",
+    },
+  });
+```
+
+
+
+se define el on submit
+
+```typescript
+const handlerSubmit = (values: TypeSchemaEmail) => {
+    console.log(values);
+    alert(values);
+  };
+```
+
+se agrega el onSubmit al `<form>`
+
+```jsx
+<form onSubmit={handleSubmit(handlerSubmit)}>
+```
+
+se utiliza `register` para darle los valores a cada input
+
+```jsx
+<input
+            {...register("email")}
+            type="email"
+          ></input>
+```
+
+se obtien el error de este campo
+
+```jsx
+<p className="text-red">{errors.email?.message}</p>
+```
+
+y luego se pone el boton de submit normal
+
+```jsx
+<button type="submit">Send</button>
+```
+
+
 
 ## Integración con Bases de Datos
 
