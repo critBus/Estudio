@@ -114,3 +114,25 @@ test("sen email", async ({ page }) => {
   expect(paginaSuccess.successMessage).toBeVisible();
 });
 ```
+
+
+
+# .env
+
+si vas a usar variables de entorno en tus test, asegurate de tener instalado `dotenv`
+
+```bash
+pnpm install dotenv
+```
+
+y luego donde se vayan a usar las variables de entorno 
+
+
+
+```typescript
+import "dotenv/config";
+test("has title", async ({ page }) => {
+  const EXPECTED_URL = process.env.EXPECTED_URL + "";
+  ...
+}
+```
