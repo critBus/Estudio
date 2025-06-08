@@ -44,6 +44,81 @@ Para obtenerlo se preciona sobre el boton (circulo) Pick Locator, y se lecciona 
 
 ![](./img_md/2025-06-06-12-23-06-image.jpg)
 
+## id
+
+```typescript
+const email = page.locator("#id-input-email");
+```
+
+## link
+
+por contenido de boton relacionado a un `<a>`
+
+```typescript
+const boton = page.getByRole("link", { name: "Ir A Otra" });
+```
+
+## button
+
+por boton con contenido
+
+```typescript
+const boton = page.getByRole("button", { name: "Send" });
+```
+
+## waitForSelector
+
+A beses es necesario esperar por la carga de algunos elementos
+
+```javascript
+await a_Page.waitForSelector("text=Send");
+```
+
+## Acciones
+
+se pueden usar desde los localizadores o desde el page pasandelo como primer argumento los datos del localizador
+
+### click
+
+```typescript
+selector_boton.click();
+
+// usando el localizador (1er arg el localizador, en este caso 
+// por contenid de texto)
+await a_Page.click("text=Send");
+```
+
+### fill
+
+En el caso de los `<input>` para ponerle valores
+
+```typescript
+selector_input_email.fill("micorreo@example.com");
+
+// usando el localizador (1er arg el localizador, en este caso por #id)
+await a_Page.fill("#id-input-email", "asd@asd.com");
+```
+
+### press
+
+para simular la utilizacion del teclado
+
+```typescript
+// usando el localizador (1er arg el localizador, en este caso por #id)
+await a_Page.press("#id-input-email", "Enter");
+```
+
+#### keyboard
+
+luego de usar algun evento como `fill `o `click `, se puede mandar a precionar una tecla usando `page.keyboard` (osea este paso no incluye volver a seleccionar un elemento, sino que en el elemento que este previamente selecciona aplicar la tecla)
+
+```javascript
+await a_Page.fill("#id-input-email", "asd@asd.com");
+
+//luego de tener seleccionado el elemento
+await a_Page.keyboard.press("Enter");
+```
+
 # Simular click (con class)
 
 1- Vamos a almacenar los elementos comunes en una clase
@@ -115,8 +190,6 @@ test("sen email", async ({ page }) => {
 });
 ```
 
-
-
 # .env
 
 si vas a usar variables de entorno en tus test, asegurate de tener instalado `dotenv`
@@ -127,12 +200,63 @@ pnpm install dotenv
 
 y luego donde se vayan a usar las variables de entorno 
 
-
-
 ```typescript
 import "dotenv/config";
 test("has title", async ({ page }) => {
   const EXPECTED_URL = process.env.EXPECTED_URL + "";
   ...
 }
+```
+
+# javascript
+
+## Ejemplo Abrir y Cerrar navegador
+
+Se puede usar para abrir una pestaña de un sitio web (obviamente este es el primer paso y lo siguiente es interactuar)
+
+```bash
+npx tsx  .\example\contexto_paginas.js
+```
+
+```javascript
+const { chromium } = require("playwright");
+URL_GOOGLE = "https://www.google.com";
+URL_1 = "http://localhost:3000";
+(async () => {
+  const browser = await chromium.launch({ headless: false });
+  //contexto google
+  const googleContext = await browser.newContext();
+  const googlePage = await googleContext.newPage();
+  await googlePage.goto(URL_1);
+  await googlePage.waitForTimeout(6000);
+  console.log("contexto1 de google open");
+  await browser.close();
+})();
+```
+
+### multiple
+
+```javascript
+const { chromium } = require("playwright");
+URL_GOOGLE = "https://www.google.com";
+URL_1 = "http://localhost:3000";
+URL_2 = `${URL_1}/form`;
+(async () => {
+  const browser = await chromium.launch({ headless: false });
+  //contexto google
+  const googleContext = await browser.newContext();
+  const googlePage = await googleContext.newPage();
+  await googlePage.goto(URL_1);
+  await googlePage.waitForTimeout(6000);
+  console.log("contexto1 de google open");
+
+  //contexo wiki
+  const wikipediaContext = await browser.newContext();
+  const wikipediaPage = await wikipediaContext.newPage();
+  await wikipediaPage.goto(URL_2);
+  await wikipediaPage.waitForTimeout(6000);
+  console.log("contexto1 de wikipedia open");
+
+  await browser.close();
+})();
 ```
