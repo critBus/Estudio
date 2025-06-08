@@ -24,6 +24,14 @@ pnpm exec playwright test
 
 al final te redirige a una pestaña donde se ven los resultados `http://localhost:9323/`
 
+## -g
+
+filtra por los nombres de los test
+
+```bash
+pnpm exec playwright test -g "nombre del test"
+```
+
 ## --ui
 
 lanza el test pero mostrando informacion literalmente visual
@@ -216,10 +224,7 @@ test.describe("conjunto de test", () => {
   test("mi prueba interna1", async ({ page }) => {});
   test("mi prueba interna2", async ({ page }) => {});
 });
-
 ```
-
-
 
 # only
 
@@ -231,10 +236,7 @@ import "dotenv/config";
 
 test.only("prueba1", async ({ page }) => {});
 test("prueba2", async ({ page }) => {});
-
 ```
-
-
 
 # skip
 
@@ -247,10 +249,17 @@ import "dotenv/config";
 test.skip("prueba1", async ({ page }) => {});
 test("prueba2", async ({ page }) => {});
 test.describe.skip("conjunto de test2", () => {});
-
 ```
 
 
+
+# describe.serial
+
+las pruebas dentro de este grupo se ejecutaran en serie (no de forma asincorna) (osea en orden, supongo que comenzando con la que mas arriba [cerca de la linea 0] este)
+
+```typescript
+test.describe.serial("conjunto de test2", () => {});
+```
 
 # Simular click (con class)
 
