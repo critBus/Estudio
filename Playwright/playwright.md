@@ -36,6 +36,37 @@ npx playwright test --ui
 
 ![](./img_md/2025-06-06-12-18-40-image.jpg)
 
+# test
+
+en los archivos `miPrueba.spect.ts` es necesario primero importar los elementos escenciales
+
+```typescript
+import { test, expect } from "@playwright/test";
+import "dotenv/config"; // en caso de dotenv (recomendado)
+```
+
+un test individual se ejecuta dentro de una funcion `test` que toma dos argumentos, el titulo (string) del test y una funcion async cun un parametro `{ page }` que no retorna nada
+
+```typescript
+test("has title", async ({ page }) => { ... });
+```
+
+## page
+
+representa a una pestaña del navegador
+
+### goto
+
+generalmente lo primero que se realiza en un test es ir a una direccion, y esto se hace a traves de la funcion `goto` de page que recibe una URL
+
+```typescript
+test("has title", async ({ page }) => {
+  const EXPECTED_URL = process.env.EXPECTED_URL + "";
+
+  await page.goto(EXPECTED_URL);
+})
+```
+
 # Localizadores
 
 son para obtener una manera de obtener los datos de un elmento para luego hacerle un test
@@ -66,11 +97,11 @@ por boton con contenido
 const boton = page.getByRole("button", { name: "Send" });
 ```
 
-## Esperas
+# Esperas
 
 Cuando es necesario esperar hasta que se cumpla algo
 
-### waitForSelector
+## waitForSelector
 
 A beses es necesario esperar por la carga de algunos elementos
 
@@ -78,7 +109,7 @@ A beses es necesario esperar por la carga de algunos elementos
 await a_Page.waitForSelector("text=Send");
 ```
 
-### waitForTimeout
+## waitForTimeout
 
 esperar por un tiempo en ml segundos
 
@@ -86,7 +117,7 @@ esperar por un tiempo en ml segundos
 await a_Page.waitForTimeout(6000);
 ```
 
-### waitForURL
+## waitForURL
 
 Esperar porque carga una URL, generalmente atado a algun
 evento que provoca la carga de esta URL
@@ -98,11 +129,11 @@ await Promise.all([
   ]);
 ```
 
-## Acciones
+# Acciones
 
 se pueden usar desde los localizadores o desde el page pasandelo como primer argumento los datos del localizador
 
-### click
+## click
 
 ```typescript
 selector_boton.click();
@@ -112,7 +143,7 @@ selector_boton.click();
 await a_Page.click("text=Send");
 ```
 
-### fill
+## fill
 
 En el caso de los `<input>` para ponerle valores
 
@@ -123,7 +154,7 @@ selector_input_email.fill("micorreo@example.com");
 await a_Page.fill("#id-input-email", "asd@asd.com");
 ```
 
-### press
+## press
 
 para simular la utilizacion del teclado
 
@@ -132,7 +163,7 @@ para simular la utilizacion del teclado
 await a_Page.press("#id-input-email", "Enter");
 ```
 
-#### keyboard
+### keyboard
 
 luego de usar algun evento como `fill `o `click `, se puede mandar a precionar una tecla usando `page.keyboard` (osea este paso no incluye volver a seleccionar un elemento, sino que en el elemento que este previamente selecciona aplicar la tecla)
 
@@ -142,6 +173,84 @@ await a_Page.fill("#id-input-email", "asd@asd.com");
 //luego de tener seleccionado el elemento
 await a_Page.keyboard.press("Enter");
 ```
+
+# expect
+
+Es en encargado de realizar las evaluaciones, recibe como argumento, un elemento de la pagina (como un page, o un localizador), o otro tipo de objeto. Y según su argumento provee de una serie de métodos de evaluación
+
+```typescript
+test("has title", async ({ page }) => {
+  const EXPECTED_URL = process.env.EXPECTED_URL + "";
+
+  await page.goto(EXPECTED_URL);
+  await a_Page.click("text=Send");
+
+  await expect(page.url()).toBe(`${EXPECTED_URL}/form`);
+})
+```
+
+## toBeVisible
+
+Comprueba si el elemento es visible
+
+```typescript
+await expect(paginaSuccess.successMessage).toBeVisible();
+```
+
+## toBeNull
+
+```typescript
+await expect(code_mail).toBeNull();
+```
+
+# describe
+
+Para agrupar test, dentro de el van los test y los hooks comunes 
+
+```typescript
+test.describe("conjunto de test", () => {
+  test.beforeAll(async ({ browser }) => {});
+  test.afterAll(async ({ browser }) => {});
+  beforeEach(async () => {});
+  afterEach(async () => {});
+  test("mi prueba interna1", async ({ page }) => {});
+  test("mi prueba interna2", async ({ page }) => {});
+});
+
+```
+
+
+
+# only
+
+en un archivo de pruebas, si hay varias, y hay alguno marcado con esto, entonces de este archivo solo se va a ejecutar la prueba esta
+
+```typescript
+import { test, expect } from "@playwright/test";
+import "dotenv/config";
+
+test.only("prueba1", async ({ page }) => {});
+test("prueba2", async ({ page }) => {});
+
+```
+
+
+
+# skip
+
+Las pruebas marcadas con este no se ejecutarn, tambien es valido para descrive
+
+```typescript
+import { test, expect } from "@playwright/test";
+import "dotenv/config";
+
+test.skip("prueba1", async ({ page }) => {});
+test("prueba2", async ({ page }) => {});
+test.describe.skip("conjunto de test2", () => {});
+
+```
+
+
 
 # Simular click (con class)
 
@@ -283,4 +392,73 @@ URL_2 = `${URL_1}/form`;
 
   await browser.close();
 })();
+```
+
+# playwright.config.ts
+
+almacena la configuracion, principalmente dentro del argumento metodo  `defineConfig` 
+
+```typescript
+import { defineConfig, devices } from "@playwright/test";
+
+
+export default defineConfig({
+  timeout: 90_000,
+  testDir: "./tests",
+  /* Run tests in files in parallel */
+  fullyParallel: true,
+    ......
+  });
+```
+
+## fullyParallel
+
+si es verdadero los test se ejecutan en paralelo 
+
+## retries
+
+cantidad de intentos para pruebas fallidas
+
+El valor que se ve indica que en Integracion continua reintenta la prueba fallida 2 veces 
+
+```typescript
+export default defineConfig({
+    retries: process.env.CI ? 2 : 0,
+});
+```
+
+## workers
+
+cantidad de workes, la configuracion que se ve indica que en CI seria 1, pero en local al ser undefined significa que segun el harware va a decidir la cantidad
+
+```typescript
+export default defineConfig({
+    workers: process.env.CI ? 1 : undefined,
+});
+```
+
+## webServer
+
+Para cuando esta integrado directamente con un proyecto node (osea en el mismo directorio se encuentra esto de playwright y a la ves el proyecto que tal ves sea de react, vue o otro)
+
+Esta configuracion por defecto esta comentada
+
+```typescript
+export default defineConfig({
+    webServer: {
+        command: 'npm run start',
+        url: 'http://localhost:3000',
+        reuseExistingServer: !process.env.CI,            
+      },
+});
+```
+
+## timeout
+
+Para configurar el tiempo maximo del que dispone un prueba, por defecto son 30 segundos y esta propiedad no esta por defecto en la configuracion (si no esta se asume los 30s)
+
+```typescript
+export default defineConfig({
+    timeout: 90_000,
+});
 ```
