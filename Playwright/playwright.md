@@ -251,8 +251,6 @@ test("prueba2", async ({ page }) => {});
 test.describe.skip("conjunto de test2", () => {});
 ```
 
-
-
 # describe.serial
 
 las pruebas dentro de este grupo se ejecutaran en serie (no de forma asincorna) (osea en orden, supongo que comenzando con la que mas arriba [cerca de la linea 0] este)
@@ -471,3 +469,577 @@ export default defineConfig({
     timeout: 90_000,
 });
 ```
+
+# POM
+
+Aquí tienes una explicación detallada sobre el **Page Object Model (POM)** en Playwright usando TypeScript, junto con ejemplos y buenas prácticas para implementarlo. Esta información te ayudará a crear una guía completa sobre Playwright.
+
+---
+
+## ¿Qué es el Page Object Model (POM)?
+
+El **Page Object Model (POM)** es un patrón de diseño utilizado en pruebas automatizadas para representar las páginas web de una aplicación como objetos. Cada página se modela como una clase que contiene:
+
+- **Selectores** de los elementos de la página (como campos de texto, botones, etc.).
+- **Métodos** que realizan acciones en la página (como hacer clic en un botón o llenar un formulario).
+
+Este enfoque mejora la **legibilidad**, **reutilización** y **mantenimiento** de las pruebas, ya que separa la lógica de la interfaz de usuario de la lógica de las pruebas.
+
+---
+
+## Fundamentos del POM en Playwright con TypeScript
+
+En Playwright, el POM se implementa creando clases para cada página de la aplicación. Cada clase:
+
+- Recibe una instancia de `Page` (de Playwright) en su constructor.
+- Define los **selectores** de los elementos clave de la página.
+- Proporciona **métodos** para interactuar con esos elementos.
+
+Esto permite que las pruebas se centren en la lógica de negocio en lugar de en los detalles de la interfaz.
+
+---
+
+## Ejemplo básico de POM
+
+Supongamos que tienes una página de inicio de sesión con campos para usuario, contraseña y un botón de inicio de sesión. Aquí te muestro cómo crear una clase `LoginPage` para esta página.
+
+```typescript
+import { Page } from '@playwright/test';
+
+export class LoginPage {
+  readonly page: Page;
+  readonly usernameInput = '#username';  // Selector del campo de usuario
+  readonly passwordInput = '#password';  // Selector del campo de contraseña
+  readonly loginButton = '#login';       // Selector del botón de inicio de sesión
+
+  constructor(page: Page) {
+    this.page = page;
+  }
+
+  async login(username: string, password: string) {
+    await this.page.fill(this.usernameInput, username);
+    await this.page.fill(this.passwordInput, password);
+    await this.page.click(this.loginButton);
+  }
+}
+```
+
+**Explicación**:
+
+- La clase `LoginPage` recibe una instancia de `Page` en su constructor.
+- Define los selectores de los elementos clave (usuario, contraseña y botón).
+- El método `login` encapsula la lógica para llenar los campos y hacer clic en el botón.
+
+## Selectores como objetos en atributos
+
+los atributos de selectores almacenarlos como `page.locator`
+
+```typescript
+// pages/login.page.ts
+import { Page } from '@playwright/test';
+
+export class LoginPage {
+  readonly page: Page;
+  readonly usernameInput = this.page.locator('#username');
+  readonly passwordInput = this.page.locator('#password');
+  readonly loginButton = this.page.locator('#loginBtn');
+
+  constructor(page: Page) {
+    this.page = page;
+  }
+
+  async goto() {
+    await this.page.goto('https://example.com/login'); 
+  }
+
+  async login(username: string, password: string) {
+    await this.usernameInput.fill(username);
+    await this.passwordInput.fill(password);
+    await this.loginButton.click();
+  }
+}
+```
+
+## selectores en constructor
+
+pasar la incializacion de los selectores al constructor de la clase
+
+```typescript
+// pages/loginPage.ts
+
+import { type Locator, type Page } from '@playwright/test';
+
+export class LoginPage {
+  // Propiedades de la clase
+  readonly page: Page;
+  readonly usernameInput: Locator;
+  readonly passwordInput: Locator;
+  readonly loginButton: Locator;
+
+  // Constructor para inicializar la página y los selectores
+  constructor(page: Page) {
+    this.page = page;
+    this.usernameInput = page.locator('#username'); // Selector por ID
+    this.passwordInput = page.locator('#password');
+    this.loginButton = page.locator('button[type="submit"]'); // Selector de CSS
+  }
+
+  // Método para realizar la acción de login
+  async login(username: string, password?: string) {
+    await this.usernameInput.fill(username);
+    if (password) {
+      await this.passwordInput.fill(password);
+    }
+    await this.loginButton.click();
+  }
+
+  // Método para navegar a la página
+  async goto() {
+    await this.page.goto('https://tu-sitio-web.com/login');
+  }
+}
+```
+
+---
+
+## Cómo usar la clase POM en una prueba
+
+Una vez que tienes la clase `LoginPage`, puedes usarla en tus pruebas de la siguiente manera:
+
+```typescript
+import { test, expect } from '@playwright/test';
+import { LoginPage } from './LoginPage';
+
+test('iniciar sesión', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  await loginPage.login('usuario', 'contraseña');
+  // Aquí puedes agregar aserciones para verificar que el inicio de sesión fue exitoso
+});
+```
+
+**Ventajas**:
+
+- La prueba es más legible y concisa.
+- Si los selectores cambian (por ejemplo, si el ID del campo de usuario cambia), solo necesitas actualizar la clase `LoginPage`, no cada prueba que use ese selector.
+
+---
+
+## Buenas prácticas para implementar POM en Playwright
+
+1. **Usa selectores únicos y estables**:
+   
+   - Prefiere selectores como IDs (`#id`), data attributes (`[data-test="element"]`), o clases específicas.
+   - Evita selectores CSS complejos o basados en texto, ya que pueden cambiar fácilmente.
+
+2. **Encapsula la lógica de interacción**:
+   
+   - Los métodos de la clase POM deben manejar todas las interacciones con la página.
+   - Las pruebas solo deben llamar a estos métodos, no interactuar directamente con los selectores.
+   
+   **Ejemplo**:
+   
+   - En lugar de:
+     
+     ```typescript
+     await page.fill('#username', 'usuario');
+     await page.fill('#password', 'contraseña');
+     await page.click('#login');
+     ```
+   
+   - Usa:
+     
+     ```typescript
+     await loginPage.login('usuario', 'contraseña');
+     ```
+
+3. **Organiza las clases POM en archivos separados**:
+   
+   - Crea una carpeta `pages` y coloca cada clase POM en su propio archivo (por ejemplo, `loginPage.ts`, `homePage.ts`).
+   - Esto mantiene el código organizado y fácil de mantener.
+
+4. **Usa una clase base para funcionalidad común**:
+   
+   - Si varias páginas comparten métodos o propiedades, crea una clase `BasePage` que puedan extender.
+   - Por ejemplo, un método para navegar a la página.
+   
+   **Ejemplo de `BasePage`**:
+   
+   ```typescript
+   import { Page } from '@playwright/test';
+   
+   export class BasePage {
+     readonly page: Page;
+     readonly url: string;
+   
+     constructor(page: Page, url: string) {
+       this.page = page;
+       this.url = url;
+     }
+   
+     async navigate() {
+       await this.page.goto(this.url);
+     }
+   }
+   ```
+   
+   **Extender `BasePage` en `LoginPage`**:
+   
+   ```typescript
+   import { BasePage } from './BasePage';
+   
+   export class LoginPage extends BasePage {
+     readonly usernameInput = '#username';
+     readonly passwordInput = '#password';
+     readonly loginButton = '#login';
+   
+     constructor(page: Page) {
+       super(page, 'https://ejemplo.com/login');
+     }
+   
+     async login(username: string, password: string) {
+       await this.page.fill(this.usernameInput, username);
+       await this.page.fill(this.passwordInput, password);
+       await this.page.click(this.loginButton);
+     }
+   }
+   ```
+   
+   - Ahora puedes navegar a la página antes de iniciar sesión:
+     
+     ```typescript
+     await loginPage.navigate();
+     await loginPage.login('usuario', 'contraseña');
+     ```
+
+5. **Maneja elementos dinámicos**:
+   
+   - Si los elementos no están disponibles inmediatamente (por ejemplo, después de una carga asíncrona), usa métodos como `waitForSelector` para asegurarte de que estén presentes antes de interactuar con ellos.
+   
+   **Ejemplo**:
+   
+   ```typescript
+   async waitForLoginButton() {
+     await this.page.waitForSelector(this.loginButton);
+   }
+   ```
+
+6. **Agrupa acciones relacionadas**:
+   
+   - Si una página tiene secciones complejas (como formularios o menús), puedes crear métodos que manejen toda la lógica de esa sección.
+   
+   **Ejemplo**:
+   
+   - Un método `fillForm` que llene varios campos de un formulario y luego haga clic en "Enviar".
+
+7. **Evita duplicar código**:
+   
+   - Si varias páginas tienen elementos o comportamientos similares, considera crear métodos reutilizables en la clase base o en utilidades separadas.
+
+
+
+#### **Estructura de Archivos**
+
+Una estructura de proyecto común podría verse así:
+
+```
+/
+|-- tests/
+|   |-- example.spec.ts   // Nuestro archivo de prueba
+|-- pages/
+|   |-- loginPage.ts      // Nuestro Page Object para la página de login
+|-- playwright.config.ts
+|-- package.json
+```
+
+o asi
+
+```
+project/
+├── pages/          # Clases de POM
+│   ├── base.page.ts
+│   ├── login.page.ts
+│   └── dashboard.page.ts
+├── tests/          # Archivos de prueba
+│   └── login.spec.ts
+├── utils/          # Funciones auxiliares (opcional)
+└── playwright.config.ts
+```
+
+
+
+---
+
+## Ejemplo avanzado: POM con múltiples páginas
+
+Supongamos que después de iniciar sesión, el usuario es redirigido a una página de inicio (`HomePage`). Aquí te muestro cómo podrías modelar eso.
+
+**Clase `HomePage`**:
+
+```typescript
+import { Page } from '@playwright/test';
+
+export class HomePage {
+  readonly page: Page;
+  readonly welcomeMessage = '#welcome';
+
+  constructor(page: Page) {
+    this.page = page;
+  }
+
+  async getWelcomeMessage() {
+    return await this.page.textContent(this.welcomeMessage);
+  }
+}
+```
+
+**Prueba que usa ambas páginas**:
+
+```typescript
+import { test, expect } from '@playwright/test';
+import { LoginPage } from './LoginPage';
+import { HomePage } from './HomePage';
+
+test('iniciar sesión y verificar mensaje de bienvenida', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  await loginPage.navigate();
+  await loginPage.login('usuario', 'contraseña');
+
+  const homePage = new HomePage(page);
+  const message = await homePage.getWelcomeMessage();
+  expect(message).toBe('Bienvenido, usuario');
+});
+```
+
+**Explicación**:
+
+- Después de iniciar sesión, la prueba usa la clase `HomePage` para interactuar con la página de inicio.
+- Esto mantiene las pruebas organizadas y enfocadas en la lógica de alto nivel.
+
+
+
+
+
+# Screenplay
+
+---
+
+## ¿Qué es el patrón Screenplay?
+
+El **patrón Screenplay** es un enfoque de diseño para pruebas automatizadas que modela las interacciones del usuario como una serie de acciones realizadas por "actores". En lugar de centrarse en la estructura técnica de la interfaz de usuario (como hace el POM), Screenplay se enfoca en las intenciones y comportamientos del usuario. Esto lo hace particularmente útil en contextos de **desarrollo impulsado por comportamiento (BDD)**, ya que alinea las pruebas con las historias de usuario y los objetivos de negocio.
+
+Piensa en Screenplay como un guion de película: los actores realizan tareas y acciones específicas para avanzar en la historia, y pueden hacer preguntas para verificar el estado de la escena (la aplicación).
+
+---
+
+## Componentes clave del patrón Screenplay
+
+El patrón Screenplay se construye alrededor de los siguientes conceptos fundamentales:
+
+1. **Actores (Actors)**:
+   
+   - Representan a los usuarios o roles que interactúan con el sistema.
+   - Cada actor tiene **habilidades** que le permiten realizar ciertas actividades, como navegar por la web o interactuar con una base de datos.
+
+2. **Habilidades (Abilities)**:
+   
+   - Son las capacidades que un actor posee. Por ejemplo, la habilidad de usar un navegador web o hacer una llamada a una API.
+
+3. **Tareas (Tasks)**:
+   
+   - Son actividades de alto nivel que el actor realiza para alcanzar un objetivo, como "iniciar sesión" o "completar un formulario".
+   - Las tareas están compuestas por acciones más pequeñas.
+
+4. **Acciones (Actions)**:
+   
+   - Son los pasos individuales dentro de una tarea, como hacer clic en un botón, ingresar texto en un campo o seleccionar una opción.
+
+5. **Preguntas (Questions)**:
+   
+   - Permiten a los actores obtener información sobre el estado de la aplicación, como verificar si un elemento está visible o leer el texto de un mensaje.
+
+---
+
+## Diferencias entre Screenplay y POM
+
+Para entender mejor Screenplay, es útil compararlo con el **Page Object Model (POM)**:
+
+- **POM**:
+  
+  - Se enfoca en modelar la estructura de la interfaz de usuario.
+  - Cada página de la aplicación se representa como un objeto con métodos que interactúan con los elementos (por ejemplo, `clickLoginButton` o `enterUsername`).
+  - Es más técnico y está ligado a los detalles de la UI.
+
+- **Screenplay**:
+  
+  - Se enfoca en el comportamiento del usuario y sus objetivos.
+  - Las pruebas se escriben en términos de "qué" quiere lograr el usuario, no "cómo" está estructurada la interfaz.
+  - Es más resiliente a cambios en la UI, ya que las acciones y tareas están desacopladas de los selectores específicos.
+
+---
+
+## Ejemplo práctico en Playwright con TypeScript
+
+Veamos cómo se aplica el patrón Screenplay en un escenario simple de inicio de sesión usando **Playwright** y **TypeScript**. Este ejemplo te ayudará a visualizar cómo se combinan los componentes.
+
+### 1. Definir la habilidad (Ability)
+
+Primero, creamos una habilidad que permite al actor interactuar con la web usando Playwright:
+
+```typescript
+import { Page } from '@playwright/test';
+
+export class BrowseTheWeb {
+  constructor(private page: Page) {}
+
+  async goto(url: string) {
+    await this.page.goto(url);
+  }
+
+  async fill(selector: string, value: string) {
+    await this.page.fill(selector, value);
+  }
+
+  async click(selector: string) {
+    await this.page.click(selector);
+  }
+
+  async textContent(selector: string) {
+    return await this.page.textContent(selector);
+  }
+}
+```
+
+### 2. Definir acciones (Actions)
+
+Las acciones son los pasos individuales que el actor puede realizar:
+
+```typescript
+export class EnterText {
+  static async into(selector: string, value: string) {
+    return async (actor: Actor) => {
+      const browse = actor.abilityTo(BrowseTheWeb);
+      await browse.fill(selector, value);
+    };
+  }
+}
+
+export class ClickElement {
+  static async on(selector: string) {
+    return async (actor: Actor) => {
+      const browse = actor.abilityTo(BrowseTheWeb);
+      await browse.click(selector);
+    };
+  }
+}
+```
+
+### 3. Definir una tarea (Task)
+
+La tarea agrupa acciones para representar un comportamiento completo, como "iniciar sesión":
+
+```typescript
+export class Login {
+  static async with(username: string, password: string) {
+    return async (actor: Actor) => {
+      await actor.attemptsTo(
+        EnterText.into('#username', username),
+        EnterText.into('#password', password),
+        ClickElement.on('#login')
+      );
+    };
+  }
+}
+```
+
+### 4. Definir una pregunta (Question)
+
+Las preguntas verifican el estado de la aplicación:
+
+```typescript
+export class IsLoggedIn {
+  static async check() {
+    return async (actor: Actor) => {
+      const browse = actor.abilityTo(BrowseTheWeb);
+      const message = await browse.textContent('#welcome');
+      return message.includes('Bienvenido');
+    };
+  }
+}
+```
+
+### 5. Definir el actor (Actor)
+
+El actor es quien ejecuta las tareas y hace las preguntas:
+
+```typescript
+export class Actor {
+  private abilities: Map<string, any> = new Map();
+
+  constructor(private name: string) {}
+
+  can(ability: any) {
+    this.abilities.set(ability.constructor.name, ability);
+    return this;
+  }
+
+  abilityTo<T>(abilityType: new (...args: any[]) => T): T {
+    return this.abilities.get(abilityType.name);
+  }
+
+  async attemptsTo(...tasks: Array<() => Promise<void>>) {
+    for (const task of tasks) {
+      await task(this);
+    }
+  }
+
+  async asks(question: () => Promise<any>) {
+    return await question(this);
+  }
+}
+```
+
+### 6. Escribir la prueba
+
+Finalmente, usamos el actor en una prueba:
+
+```typescript
+import { test, expect } from '@playwright/test';
+import { Actor } from './Actor';
+import { BrowseTheWeb } from './BrowseTheWeb';
+import { Login } from './Login';
+import { IsLoggedIn } from './IsLoggedIn';
+
+test('iniciar sesión con Screenplay', async ({ page }) => {
+  const actor = new Actor('Usuario');
+  actor.can(new BrowseTheWeb(page));
+
+  await actor.attemptsTo(
+    async (a) => await a.abilityTo(BrowseTheWeb).goto('https://ejemplo.com/login'),
+    Login.with('usuario', 'contraseña')
+  );
+
+  const isLoggedIn = await actor.asks(IsLoggedIn.check());
+  expect(isLoggedIn).toBe(true);
+});
+```
+
+**Explicación del flujo**:
+
+- El actor "Usuario" tiene la habilidad de navegar por la web con Playwright.
+- Ejecuta la tarea de "iniciar sesión" ingresando un usuario y contraseña, y haciendo clic en el botón de login.
+- Luego, pregunta si el inicio de sesión fue exitoso verificando un mensaje de bienvenida.
+
+---
+
+## Ventajas del patrón Screenplay
+
+- **Legibilidad**: Las pruebas se leen como un guion, describiendo claramente las intenciones del usuario.
+- **Reutilización**: Las tareas y acciones son módulos reutilizables en diferentes pruebas.
+- **Resiliencia**: Al enfocarse en el comportamiento y no en la estructura de la UI, las pruebas son menos propensas a romperse por cambios en la interfaz.
+- **Mantenibilidad**: Los cambios en la UI solo afectan a las acciones específicas, no a todas las pruebas.
+
+---
+
+## Consideraciones
+
+Aunque Screenplay puede ser más verboso que el POM y requiere un poco más de configuración inicial, sus beneficios brillan en proyectos complejos o equipos que buscan alinear las pruebas con los requisitos del negocio. Es una excelente opción si trabajas con BDD o necesitas pruebas que sean fáciles de entender para stakeholders no técnicos.
