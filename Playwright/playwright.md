@@ -66,12 +66,36 @@ por boton con contenido
 const boton = page.getByRole("button", { name: "Send" });
 ```
 
-## waitForSelector
+## Esperas
+
+Cuando es necesario esperar hasta que se cumpla algo
+
+### waitForSelector
 
 A beses es necesario esperar por la carga de algunos elementos
 
 ```javascript
 await a_Page.waitForSelector("text=Send");
+```
+
+### waitForTimeout
+
+esperar por un tiempo en ml segundos
+
+```javascript
+await a_Page.waitForTimeout(6000);
+```
+
+### waitForURL
+
+Esperar porque carga una URL, generalmente atado a algun
+evento que provoca la carga de esta URL
+
+```javascript
+await Promise.all([
+    a_Page.waitForURL(`${URL_1}/verificar`),
+    a_Page.keyboard.press("Enter"),
+  ]);
 ```
 
 ## Acciones
