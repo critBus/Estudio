@@ -735,8 +735,6 @@ test('iniciar sesión', async ({ page }) => {
    
    - Si varias páginas tienen elementos o comportamientos similares, considera crear métodos reutilizables en la clase base o en utilidades separadas.
 
-
-
 #### **Estructura de Archivos**
 
 Una estructura de proyecto común podría verse así:
@@ -764,8 +762,6 @@ project/
 ├── utils/          # Funciones auxiliares (opcional)
 └── playwright.config.ts
 ```
-
-
 
 ---
 
@@ -814,10 +810,6 @@ test('iniciar sesión y verificar mensaje de bienvenida', async ({ page }) => {
 
 - Después de iniciar sesión, la prueba usa la clase `HomePage` para interactuar con la página de inicio.
 - Esto mantiene las pruebas organizadas y enfocadas en la lógica de alto nivel.
-
-
-
-
 
 # Screenplay
 
@@ -1043,3 +1035,227 @@ test('iniciar sesión con Screenplay', async ({ page }) => {
 ## Consideraciones
 
 Aunque Screenplay puede ser más verboso que el POM y requiere un poco más de configuración inicial, sus beneficios brillan en proyectos complejos o equipos que buscan alinear las pruebas con los requisitos del negocio. Es una excelente opción si trabajas con BDD o necesitas pruebas que sean fáciles de entender para stakeholders no técnicos.
+
+
+
+
+
+---
+
+## Estructura de archivos recomendada para el patrón Screenplay
+
+El patrón Screenplay se basa en componentes clave: **actores**, **habilidades**, **tareas**, **acciones** y **preguntas**. Cada uno de estos debe tener su propio lugar en la estructura de archivos para facilitar la navegación y el mantenimiento. A continuación, te propongo una estructura que sigue las mejores prácticas y es adaptable a diferentes tamaños de proyecto.
+
+### Estructura básica
+
+```
+project-root/
+├── actors/
+│   └── Actor.ts
+├── abilities/
+│   └── BrowseTheWeb.ts
+├── tasks/
+│   ├── Login.ts
+│   ├── AddToCart.ts
+│   └── ...
+├── actions/
+│   ├── EnterText.ts
+│   ├── ClickElement.ts
+│   └── ...
+├── questions/
+│   ├── IsLoggedIn.ts
+│   ├── CartItemCount.ts
+│   └── ...
+├── tests/
+│   ├── login.test.ts
+│   ├── shopping.test.ts
+│   └── ...
+├── utils/
+│   ├── config.ts
+│   ├── helpers.ts
+│   └── ...
+└── README.md
+```
+
+### Explicación de cada carpeta
+
+1. **`actors/`**  
+   
+   - Contiene la definición del actor o actores. Normalmente, un solo archivo como `Actor.ts` es suficiente, ya que los actores suelen ser genéricos y reutilizables.  
+   - Si tu proyecto tiene diferentes tipos de usuarios (por ejemplo, "admin" o "cliente"), podrías agregar subclases específicas aquí.
+
+2. **`abilities/`**  
+   
+   - Aquí se definen las habilidades de los actores, como `BrowseTheWeb.ts`, que permite interactuar con una página web usando Playwright.  
+   - Si necesitas habilidades adicionales (por ejemplo, interactuar con una API), también se colocan en esta carpeta.
+
+3. **`tasks/`**  
+   
+   - Contiene las tareas de alto nivel que los actores realizan, como "iniciar sesión" (`Login.ts`) o "agregar al carrito" (`AddToCart.ts`).  
+   - Cada tarea agrupa varias acciones para lograr un objetivo específico.  
+   - En proyectos grandes, puedes organizar las tareas en subcarpetas por funcionalidad:  
+     
+     ```
+     tasks/
+     ├── authentication/
+     │   └── Login.ts
+     ├── shopping/
+     │   └── AddToCart.ts
+     └── ...
+     ```
+
+4. **`actions/`**  
+   
+   - Define las acciones individuales y más básicas, como `EnterText.ts` o `ClickElement.ts`.  
+   - Si hay muchas acciones, puedes dividirlas en subcarpetas según su tipo o propósito:  
+     
+     ```
+     actions/
+     ├── form/
+     │   ├── EnterText.ts
+     │   └── SelectOption.ts
+     ├── navigation/
+     │   └── ClickLink.ts
+     └── ...
+     ```
+
+5. **`questions/`**  
+   
+   - Almacena las preguntas que los actores pueden hacer para verificar el estado de la aplicación, como `IsLoggedIn.ts` o `CartItemCount.ts`.  
+   - Estas se usan en las aserciones de las pruebas.
+
+6. **`tests/`**  
+   
+   - Contiene los archivos de prueba, como `login.test.ts` o `shopping.test.ts`.  
+   - Aquí se combinan actores, tareas y preguntas para definir los escenarios de prueba.  
+   - En proyectos grandes, puedes organizarlos en subcarpetas por funcionalidad o suite de pruebas.
+
+7. **`utils/`**  
+   
+   - Incluye archivos de utilidades generales, como configuraciones (`config.ts`), funciones de ayuda (`helpers.ts`) o datos de prueba.  
+   - Es opcional, pero ayuda a mantener el código limpio y evitar duplicación.
+
+8. **`README.md`**  
+   
+   - Un archivo en la raíz del proyecto que explica la estructura y cómo usarla. Es muy útil para nuevos miembros del equipo.
+
+---
+
+## Buenas prácticas para la estructura de archivos
+
+1. **Separación clara por tipo de componente**  
+   
+   - Mantén cada elemento del patrón Screenplay (actores, habilidades, tareas, etc.) en su propia carpeta para facilitar la búsqueda y edición del código.
+
+2. **Organización por funcionalidad**  
+   
+   - Si tu aplicación tiene módulos como autenticación, compras o perfil, usa subcarpetas dentro de `tasks`, `actions` y `questions` para reflejar estas áreas:  
+     
+     ```
+     tasks/
+     ├── authentication/
+     │   ├── Login.ts
+     │   └── Logout.ts
+     ├── shopping/
+     │   ├── AddToCart.ts
+     │   └── Checkout.ts
+     └── ...
+     ```
+
+3. **Nombres descriptivos y consistentes**  
+   
+   - Usa nombres que indiquen claramente el propósito del archivo, como `Login.ts` o `ClickElement.ts`.  
+   - Sigue una convención consistente, por ejemplo, PascalCase para clases (`LoginTask`) y camelCase para funciones.
+
+4. **Evita duplicación de código**  
+   
+   - Si varias tareas o acciones comparten lógica, extráela a archivos en `utils/` o crea acciones reutilizables.
+
+5. **Documentación**  
+   
+   - Agrega comentarios en el código para explicar tareas o acciones complejas.  
+   - Incluye un `README.md` con detalles sobre la estructura y las convenciones.
+
+6. **Escalabilidad**  
+   
+   - Revisa y ajusta la estructura a medida que el proyecto crece. Si una carpeta tiene demasiados archivos, considera subdividirla.  
+   - Diseña la estructura para que sea flexible ante nuevos requerimientos.
+
+---
+
+## Ejemplo para un proyecto pequeño
+
+Para un proyecto pequeño, esta estructura básica funciona bien:
+
+```
+project-root/
+├── actors/
+│   └── Actor.ts
+├── abilities/
+│   └── BrowseTheWeb.ts
+├── tasks/
+│   ├── Login.ts
+│   └── SearchProduct.ts
+├── actions/
+│   ├── EnterText.ts
+│   ├── ClickElement.ts
+│   └── SelectOption.ts
+├── questions/
+│   ├── IsLoggedIn.ts
+│   └── ProductDetails.ts
+├── tests/
+│   ├── login.test.ts
+│   └── search.test.ts
+└── utils/
+    └── config.ts
+```
+
+## Ejemplo para un proyecto grande
+
+Para un proyecto más complejo con múltiples módulos, la estructura puede expandirse así:
+
+```
+project-root/
+├── actors/
+│   └── Actor.ts
+├── abilities/
+│   ├── BrowseTheWeb.ts
+│   └── CallAPI.ts
+├── tasks/
+│   ├── authentication/
+│   │   ├── Login.ts
+│   │   └── Register.ts
+│   ├── shopping/
+│   │   ├── AddToCart.ts
+│   │   └── Checkout.ts
+│   └── profile/
+│       └── UpdateProfile.ts
+├── actions/
+│   ├── form/
+│   │   ├── EnterText.ts
+│   │   └── SelectOption.ts
+│   ├── navigation/
+│   │   └── ClickLink.ts
+│   └── api/
+│       └── SendRequest.ts
+├── questions/
+│   ├── authentication/
+│   │   └── IsLoggedIn.ts
+│   ├── shopping/
+│   │   └── CartItemCount.ts
+│   └── profile/
+│       └── ProfileInfo.ts
+├── tests/
+│   ├── authentication/
+│   │   ├── login.test.ts
+│   │   └── register.test.ts
+│   ├── shopping/
+│   │   ├── addToCart.test.ts
+│   │   └── checkout.test.ts
+│   └── profile/
+│       └── updateProfile.test.ts
+└── utils/
+    ├── config.ts
+    ├── helpers.ts
+    └── testData.ts
+```
