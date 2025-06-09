@@ -1036,10 +1036,6 @@ test('iniciar sesión con Screenplay', async ({ page }) => {
 
 Aunque Screenplay puede ser más verboso que el POM y requiere un poco más de configuración inicial, sus beneficios brillan en proyectos complejos o equipos que buscan alinear las pruebas con los requisitos del negocio. Es una excelente opción si trabajas con BDD o necesitas pruebas que sean fáciles de entender para stakeholders no técnicos.
 
-
-
-
-
 ---
 
 ## Estructura de archivos recomendada para el patrón Screenplay
@@ -1092,7 +1088,9 @@ project-root/
 3. **`tasks/`**  
    
    - Contiene las tareas de alto nivel que los actores realizan, como "iniciar sesión" (`Login.ts`) o "agregar al carrito" (`AddToCart.ts`).  
+   
    - Cada tarea agrupa varias acciones para lograr un objetivo específico.  
+   
    - En proyectos grandes, puedes organizar las tareas en subcarpetas por funcionalidad:  
      
      ```
@@ -1107,6 +1105,7 @@ project-root/
 4. **`actions/`**  
    
    - Define las acciones individuales y más básicas, como `EnterText.ts` o `ClickElement.ts`.  
+   
    - Si hay muchas acciones, puedes dividirlas en subcarpetas según su tipo o propósito:  
      
      ```
@@ -1258,4 +1257,204 @@ project-root/
     ├── config.ts
     ├── helpers.ts
     └── testData.ts
+```
+
+
+
+## Ejemplo
+
+
+
+## /tasks/
+
+
+
+### /tasks/task.ts
+
+```typescript
+import { Page } from "@playwright/test";
+
+export interface Task {
+  perform(page?: Page): Promise<void>;
+}
+
+```
+
+### /tasks/openBrowser.ts
+
+```typescript
+import { Browser, Page, chromium } from "@playwright/test";
+import { Task } from "./task";
+
+export default class OpenBrowser implements Task {
+  private url: string;
+  private browser?: Browser;
+  private page?: Page;
+  constructor(url: string) {
+    this.url = url;
+  }
+  static at(url: string): OpenBrowser {
+    return new OpenBrowser(url);
+  }
+  async perform(): Promise<void> {
+    this.browser = await chromium.launch({ headless: false });
+    const context = await this.browser.newContext();
+    this.page = await context.newPage();
+    await this.page.goto(this.url);
+  }
+  async close(): Promise<void> {
+    if (this.browser) {
+      await this.browser.close();
+    }
+  }
+  getPage(): Page | undefined {
+    return this.page;
+  }
+}
+
+```
+
+
+
+### /tasks/senEmail.ts
+
+
+
+```typescript
+import { Browser, Page, chromium } from "@playwright/test";
+import { Task } from "./task";
+
+export default class SendEmail implements Task {
+  private email: string;
+  constructor(email: string) {
+    this.email = email;
+  }
+  static for(email: string): SendEmail {
+    return new SendEmail(email);
+  }
+  async perform(page?: Page): Promise<void> {
+    if (!page) {
+      throw new Error("No esta inicializada");
+    }
+    await page.fill("#id-input-email", "asd@asd.com");
+    await page.press("#id-input-email", "Enter");
+  }
+}
+
+```
+
+
+
+### /tasks/sendCode.ts
+
+```typescript
+import { Browser, Page, chromium } from "@playwright/test";
+import { Task } from "./task";
+
+export default class SendCode implements Task {
+  private code: string;
+  constructor(code: string) {
+    this.code = code;
+  }
+  static for(code: string): SendCode {
+    return new SendCode(code);
+  }
+  async perform(page?: Page): Promise<void> {
+    if (!page) {
+      throw new Error("No esta inicializada");
+    }
+    const code = this.code;
+    await page.fill("#id-digit-0", code[0]);
+    await page.fill("#id-digit-1", code[1]);
+    await page.fill("#id-digit-2", code[2]);
+    await page.fill("#id-digit-3", code[3]);
+    await page.fill("#id-digit-4", code[4]);
+    await page.fill("#id-digit-5", code[5]);
+    await page.click("text=Send");
+  }
+}
+
+```
+
+
+
+## /actors/actor.ts
+
+```typescript
+// import { chromium, Browser, Page } from "playwright";
+import { Page, Locator, chromium, Browser } from "@playwright/test";
+import { Task } from "../tasks/task";
+export default class Actor {
+  name: string;
+  private page?: Page;
+  constructor(name: string) {
+    this.name = name;
+  }
+
+  async attempsTo(...tasks: Task[]) {
+    for (const task of tasks) {
+      await task.perform(this.page);
+    }
+  }
+  setPage(page: Page | undefined) {
+    this.page = page;
+  }
+}
+
+```
+
+
+
+## /questions/verifySuccess.ts
+
+```typescript
+import { Browser, Page, chromium, expect } from "@playwright/test";
+export default class VerifySuccess {
+  static areDisplayed(): VerifySuccess {
+    return new VerifySuccess();
+  }
+  async perform(page?: Page): Promise<boolean> {
+    if (!page) {
+      throw new Error("el page no esta definido");
+    }
+    const successMessage = page.getByText("Success");
+
+    // await expect(successMessage).toBeVisible();
+    return await successMessage.isVisible();
+  }
+}
+
+```
+
+
+
+## tests
+
+```typescript
+import { test, expect } from "@playwright/test";
+import "dotenv/config";
+import Actor from "../screenplay/actors/actor";
+import OpenBrowser from "../screenplay/tasks/openBrowser";
+import SendEmail from "../screenplay/tasks/senEmail";
+import SendCode from "../screenplay/tasks/sendCode";
+import VerifySuccess from "../screenplay/questions/verifySuccess";
+
+test("test con screenplay", async ({ page }) => {
+  const EXPECTED_URL = process.env.EXPECTED_URL + "";
+  const actor = new Actor("Actor 1");
+  const openForm = OpenBrowser.at(`${EXPECTED_URL}form`);
+  await openForm.perform();
+  actor.setPage(openForm.getPage());
+
+  const sendEmail = SendEmail.for("asd@asd.com");
+  await actor.attempsTo(sendEmail);
+
+  const sendCode = SendCode.for("123456");
+  await actor.attempsTo(sendCode);
+
+  const verify = VerifySuccess.areDisplayed();
+
+  await openForm.close();
+});
+
 ```
