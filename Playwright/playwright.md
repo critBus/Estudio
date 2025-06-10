@@ -10,6 +10,7 @@ Dentro de la carpeta del proyecto a probar /MiProyecto
 
 ```bash
 pnpm create playwright
+pnpm install dotenv
 ```
 
 el va a instalarce con el node modules y va a crear una carpeta /tests y algunos archivos
@@ -73,6 +74,31 @@ test("has title", async ({ page }) => {
 
   await page.goto(EXPECTED_URL);
 })
+```
+
+### use playwright.config.ts
+
+Si se configuro el `playwright.config.ts` para la ruta base
+
+```typescript
+export default defineConfig({
+  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  use: {
+    /* Base URL to use in actions like `await page.goto('/')`. */
+    baseURL: "http://localhost:3000",
+
+    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+    trace: "on-first-retry",
+  },
+});
+```
+
+entonces no hay que expecisificar la url base al usar `goto`
+
+```typescript
+test("mi prueba interna1", async ({ page }) => {
+    await page.goto("/");
+  });
 ```
 
 # Localizadores
@@ -444,16 +470,44 @@ export default defineConfig({
 });
 ```
 
+
+
+## use
+
+Para especificar la ruta base del proyecto 
+
+```typescript
+export default defineConfig({
+  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  use: {
+    /* Base URL to use in actions like `await page.goto('/')`. */
+    baseURL: "http://localhost:3000",
+
+    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+    trace: "on-first-retry",
+  },
+});
+```
+
 ## webServer
 
 Para cuando esta integrado directamente con un proyecto node (osea en el mismo directorio se encuentra esto de playwright y a la ves el proyecto que tal ves sea de react, vue o otro)
 
 Esta configuracion por defecto esta comentada
 
+Es necesesario la configuracion del `use`
+
 ```typescript
 export default defineConfig({
+    use: {
+        /* Base URL to use in actions like `await page.goto('/')`. */
+        baseURL: "http://localhost:3000",
+
+        /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+        trace: "on-first-retry",
+      },
     webServer: {
-        command: 'npm run start',
+        command: 'pnpm start',
         url: 'http://localhost:3000',
         reuseExistingServer: !process.env.CI,            
       },
@@ -1259,15 +1313,9 @@ project-root/
     └── testData.ts
 ```
 
-
-
 ## Ejemplo
 
-
-
 ## /tasks/
-
-
 
 ### /tasks/task.ts
 
@@ -1277,7 +1325,6 @@ import { Page } from "@playwright/test";
 export interface Task {
   perform(page?: Page): Promise<void>;
 }
-
 ```
 
 ### /tasks/openBrowser.ts
@@ -1311,14 +1358,9 @@ export default class OpenBrowser implements Task {
     return this.page;
   }
 }
-
 ```
 
-
-
 ### /tasks/senEmail.ts
-
-
 
 ```typescript
 import { Browser, Page, chromium } from "@playwright/test";
@@ -1340,10 +1382,7 @@ export default class SendEmail implements Task {
     await page.press("#id-input-email", "Enter");
   }
 }
-
 ```
-
-
 
 ### /tasks/sendCode.ts
 
@@ -1373,10 +1412,7 @@ export default class SendCode implements Task {
     await page.click("text=Send");
   }
 }
-
 ```
-
-
 
 ## /actors/actor.ts
 
@@ -1400,10 +1436,7 @@ export default class Actor {
     this.page = page;
   }
 }
-
 ```
-
-
 
 ## /questions/verifySuccess.ts
 
@@ -1423,10 +1456,7 @@ export default class VerifySuccess {
     return await successMessage.isVisible();
   }
 }
-
 ```
-
-
 
 ## tests
 
@@ -1456,5 +1486,4 @@ test("test con screenplay", async ({ page }) => {
 
   await openForm.close();
 });
-
 ```
