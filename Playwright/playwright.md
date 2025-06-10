@@ -33,6 +33,36 @@ filtra por los nombres de los test
 pnpm exec playwright test -g "nombre del test"
 ```
 
+## --project
+
+para ejecutar los test en un solo navegador, (en una configuración especifica) se toma un de los nombres dados en el campo de “projects” en el playwright.config.ts
+
+```bash
+pnpm exec playwright test --project="chromium"
+```
+
+```typescript
+export default defineConfig({
+  /* Configure projects for major browsers */
+  projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+    },
+
+    {
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
+    },
+
+    {
+      name: "webkit",
+      use: { ...devices["Desktop Safari"] },
+    },
+    ]
+});
+```
+
 ## --ui
 
 lanza el test pero mostrando informacion literalmente visual
@@ -130,6 +160,18 @@ por boton con contenido
 ```typescript
 const boton = page.getByRole("button", { name: "Send" });
 ```
+
+
+
+## first
+
+para si el resultado de un selector es multiple
+
+```typescript
+const addButton = page.locator("text=Add").first();
+```
+
+
 
 # Esperas
 
@@ -469,8 +511,6 @@ export default defineConfig({
     workers: process.env.CI ? 1 : undefined,
 });
 ```
-
-
 
 ## use
 
