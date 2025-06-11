@@ -161,8 +161,6 @@ por boton con contenido
 const boton = page.getByRole("button", { name: "Send" });
 ```
 
-
-
 ## first
 
 para si el resultado de un selector es multiple
@@ -171,7 +169,26 @@ para si el resultado de un selector es multiple
 const addButton = page.locator("text=Add").first();
 ```
 
+## data-testid
 
+para seleccionar por solo este id especial para tests
+
+```html
+<span className="text-[12px]" data-testid="id-test-cart-count">
+```
+
+```typescript
+const cartCount = page.locator('[data-testid="id-test-cart-count"]');
+```
+
+## multiple
+
+para obtener varios elementos de un mismo tipo y luego contar cuantos hay
+
+```typescript
+await expect(await page.getByText(currentPrice).count()).toBeGreaterThan(0);
+await expect(await page.getByText(nextPrice).count()).toBe(0);
+```
 
 # Esperas
 
@@ -182,7 +199,7 @@ Cuando es necesario esperar hasta que se cumpla algo
 A beses es necesario esperar por la carga de algunos elementos
 
 ```javascript
-await a_Page.waitForSelector("text=Send");
+await page.waitForSelector("text=Send");
 ```
 
 ## waitForTimeout
@@ -190,7 +207,7 @@ await a_Page.waitForSelector("text=Send");
 esperar por un tiempo en ml segundos
 
 ```javascript
-await a_Page.waitForTimeout(6000);
+await page.waitForTimeout(6000);
 ```
 
 ## waitForURL
