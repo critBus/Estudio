@@ -426,8 +426,6 @@ async def http_error_handler(request: Request, call_next):
         return JSONResponse(content=content, status_code=status_code)
 ```
 
-
-
 ## static
 
 para exponer los archivos estaticos

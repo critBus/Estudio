@@ -103,6 +103,7 @@
 - **Componentes**: Funciones que retornan JSX, permitiendo la reutilización de código. Los datos fluyen de padres a hijos.
   
   - Deben nombrarse en PascalCase.
+  
   - Ejemplo:
     
     ```jsx
@@ -110,6 +111,7 @@
       <button style={{ backgroundColor: "blue" }}>{textoEnElBoton}</button>
     );
     ```
+  
   - Uso:
     
     ```jsx
@@ -125,6 +127,7 @@
       <button style={{ backgroundColor: "blue" }}>{children}</button>
     );
     ```
+  
   - Uso:
     
     ```jsx
@@ -173,6 +176,7 @@
 - **Atributos**:
   
   - `class` → `className`
+  
   - Estilos en línea: Se pasan como objetos.
     
     ```jsx
