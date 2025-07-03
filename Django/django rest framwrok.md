@@ -813,3 +813,872 @@ Seleccionar "Esta semana" mostrará solo los registros creados en los últimos 7
 - **`PastDateRangeFilter`** es una herramienta de `django-daterangefilter` para filtrar registros en Django Admin por fechas pasadas.
 - Ideal para análisis histórico de datos (ventas, usuarios, logs, etc.).
 - Mejora la experiencia de usuario con opciones predefinidas y un selector visual.
+
+
+
+# get_actions -  Admin
+
+La sobrescritura del método `get_actions(self, request)` en un `ModelAdmin` de Django se utiliza para **personalizar las acciones disponibles en la interfaz de administración** (por ejemplo, en la lista de registros de un modelo). Estas acciones son operaciones que se pueden aplicar a múltiples registros seleccionados (como "Eliminar seleccionados", "Publicar seleccionados", etc.).
+
+---
+
+### ¿Qué hace `get_actions`?
+
+Por defecto, Django incluye acciones como `"delete_selected"` (eliminar seleccionados). El método `get_actions` devuelve un diccionario con las acciones disponibles, donde cada clave es el nombre de la acción y el valor es una tupla con:
+
+1. La función que ejecuta la acción.
+2. Un nombre legible (opcional).
+3. Una descripción (opcional).
+
+Ejemplo de salida por defecto:
+
+```python
+{
+    "delete_selected": (delete_selected, "Eliminar seleccionados", "Eliminar los elementos seleccionados")
+}
+```
+
+---
+
+### ¿Por qué sobrescribirlo?
+
+1. **Agregar acciones personalizadas**  
+   Ejemplo: Agregar una acción para "Archivar seleccionados" o "Enviar correo a usuarios seleccionados".
+
+2. **Eliminar acciones predeterminadas**  
+   Ejemplo: Quitar la acción `"delete_selected"` para evitar eliminaciones accidentales.
+
+3. **Modificar condiciones dinámicas**  
+   Ejemplo: Mostrar ciertas acciones solo si el usuario tiene permisos específicos o cumple ciertas condiciones.
+
+---
+
+### Ejemplo completo de uso:
+
+#### 1. Definir una acción personalizada
+
+Primero define la función que realizará la acción:
+
+```python
+from django.contrib import messages
+
+def marcar_como_activo(modeladmin, request, queryset):
+    queryset.update(estado="activo")
+    messages.success(request, "Los elementos seleccionados fueron marcados como activos.")
+marcar_como_activo.short_description = "Marcar como activo"
+```
+
+#### 2. Sobrescribir `get_actions` en el `ModelAdmin`
+
+```python
+class MiModeloAdmin(admin.ModelAdmin):
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+
+        # Añadir acción personalizada
+        actions["marcar_como_activo"] = (marcar_como_activo, "marcar_como_activo", "Marcar como activo")
+
+        # Eliminar acción predeterminada (ej: delete_selected)
+        if "delete_selected" in actions:
+            del actions["delete_selected"]
+
+        return actions
+```
+
+---
+
+### Casos de uso comunes
+
+#### 1. **Acciones condicionales basadas en permisos**
+
+```python
+def get_actions(self, request):
+    actions = super().get_actions(request)
+
+    # Solo mostrar ciertas acciones si el usuario tiene permiso
+    if not request.user.has_perm("miapp.puede_archivar"):
+        if "archivar" in actions:
+            del actions["archivar"]
+
+    return actions
+```
+
+#### 2. **Acciones para usuarios específicos**
+
+```python
+def get_actions(self, request):
+    actions = super().get_actions(request)
+
+    # Solo mostrar acción si el usuario es staff
+    if not request.user.is_staff:
+        if "enviar_notificacion" in actions:
+            del actions["enviar_notificacion"]
+
+    return actions
+```
+
+---
+
+### Buenas prácticas
+
+1. **Usa `super()` para preservar acciones existentes**  
+   Siempre llama a `super().get_actions(request)` para mantener las acciones predeterminadas (ej: `"delete_selected"`).
+
+2. **Documenta las acciones**  
+   Usa `short_description` para dar nombres legibles a las acciones.
+
+3. **Maneja errores con `messages`**  
+   Usa `messages.success`, `messages.warning`, etc., para informar al usuario sobre el resultado de la acción.
+
+4. **Valida permisos**  
+   Verifica que el usuario tenga permisos antes de permitir acciones sensibles.
+
+---
+
+### Ejemplo avanzado: Acción que filtra registros
+
+```python
+def desactivar_usuarios_inactivos(modeladmin, request, queryset):
+    # Filtrar usuarios inactivos (ej: sin actividad en 30 días)
+    hace_30_dias = timezone.now() - timedelta(days=30)
+    inactivos = queryset.filter(ultimo_login__lt=hace_30_dias)
+    inactivos.update(is_active=False)
+    messages.info(request, f"{inactivos.count()} usuarios inactivos desactivados.")
+desactivar_usuarios_inactivos.short_description = "Desactivar usuarios inactivos"
+```
+
+---
+
+### Resumen
+
+- **`get_actions`** controla qué acciones aparecen en la interfaz de administración.
+- Úsalo para **agregar, eliminar o modificar acciones** según necesidades.
+- Ideal para operaciones en lote (ej: actualizar estados, enviar correos, archivar).
+- Combínalo con validaciones de permisos y mensajes para una experiencia segura y clara.
+
+
+
+-----------------
+
+# get_urls(self) - Admin
+
+La sobrescritura del método `get_urls(self)` en Django Admin se utiliza para **definir o extender las URLs personalizadas** que estarán disponibles en la interfaz de administración de un modelo. Esto permite agregar vistas personalizadas, acciones especiales o integrar funcionalidades adicionales en el panel de administración.
+
+---
+
+### ¿Por qué se usa?
+
+Por defecto, Django Admin genera automáticamente URLs para operaciones básicas como:
+
+- Listado de registros (`/admin/app/model/`)
+- Creación de registros (`/admin/app/model/add/`)
+- Edición de registros (`/admin/app/model/123/change/`)
+- Eliminación de registros (`/admin/app/model/123/delete/`)
+
+Pero al sobrescribir `get_urls`, puedes:
+
+1. **Agregar vistas personalizadas** (ej: exportar datos a CSV, generar reportes, integrar herramientas externas).
+2. **Personalizar la navegación** entre modelos.
+3. **Controlar el acceso a ciertas vistas** basado en permisos.
+4. **Integrar APIs internas** solo accesibles desde el admin.
+
+---
+
+### Ejemplo básico: Agregar una vista personalizada
+
+Supongamos que quieres crear una acción en el admin que exporte datos a CSV.
+
+#### 1. Define la vista personalizada:
+
+```python
+from django.http import HttpResponse
+import csv
+from django.contrib import admin
+
+class MiModeloAdmin(admin.ModelAdmin):
+    def get_urls(self):
+        urls = super().get_urls()
+        # Añade una URL personalizada
+        custom_urls = [
+            path('exportar-csv/', self.admin_site.admin_view(self.exportar_csv), name='miapp-mimodelo-exportar'),
+        ]
+        return custom_urls + urls
+
+    def exportar_csv(self, request):
+        # Lógica para exportar datos a CSV
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="datos.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['ID', 'Nombre'])
+
+        for obj in MiModelo.objects.all():
+            writer.writerow([obj.id, obj.nombre])
+
+        return response
+```
+
+#### 2. Acceso desde el admin:
+
+Visita `/admin/miapp/mimodelo/exportar-csv/` y obtendrás el archivo CSV.
+
+---
+
+### Componentes clave:
+
+1. **`path()` o `re_path()`**:  
+   Define la URL y la función que la maneja.  
+   
+   - `path('exportar-csv/', ...)` crea la ruta `/admin/miapp/mimodelo/exportar-csv/`.
+
+2. **`admin_view()`**:  
+   Envuelve la vista personalizada para asegurar que solo usuarios autenticados con permisos de admin puedan acceder.  
+   
+   - `self.admin_site.admin_view(self.exportar_csv)`
+
+3. **`name`**:  
+   Asigna un nombre único a la URL para usarlo en plantillas, redirecciones o enlaces.
+
+---
+
+### Casos de uso comunes:
+
+1. **Exportar datos** (CSV, Excel, JSON).
+2. **Importar datos** desde archivos.
+3. **Vistas de reportes** (ej: estadísticas, gráficos).
+4. **Acciones masivas** (ej: enviar correos a usuarios seleccionados).
+5. **Integración con herramientas externas** (ej: conectar con una API de terceros).
+
+---
+
+### Ejemplo avanzado: Botón en la lista de registros
+
+Puedes combinar `get_urls` con una columna personalizada en `list_display` para crear botones que ejecuten acciones personalizadas.
+
+#### 1. Define el botón en la lista:
+
+```python
+class MiModeloAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'accion_personalizada')
+
+    def accion_personalizada(self, obj):
+        return format_html('<a class="button" href="{}">Exportar</a>', reverse('admin:miapp-mimodelo-exportar'))
+
+    accion_personalizada.short_description = "Acción"
+```
+
+#### 2. Define la URL en `get_urls`:
+
+```python
+def get_urls(self):
+    urls = super().get_urls()
+    custom_urls = [
+        path('<path:object_id>/exportar/', self.admin_site.admin_view(self.exportar_registro), name='miapp-mimodelo-exportar'),
+    ]
+    return custom_urls + urls
+```
+
+#### 3. Vista personalizada:
+
+```python
+def exportar_registro(self, request, object_id):
+    obj = MiModelo.objects.get(pk=object_id)
+    # Lógica para exportar solo este objeto
+    return HttpResponse(f"Exportando {obj.nombre}")
+```
+
+---
+
+### Consideraciones importantes:
+
+1. **Orden de las URLs**:  
+   Django busca coincidencias desde la primera URL hacia la última. Si defines una URL muy general (ej: `path('<str:slug>/', ...)`), asegúrate de que no bloquee otras rutas.
+
+2. **Seguridad**:  
+   Usa `admin_view()` para proteger vistas contra acceso no autorizado.  
+   
+   - También puedes validar permisos dentro de la vista:
+     
+     ```python
+     if not request.user.has_perm('miapp.puede_exportar'):
+         raise PermissionDenied
+     ```
+
+3. **CSRF y POST**:  
+   Si tu vista recibe formularios o solicitudes POST, añade protección CSRF:
+   
+   ```python
+   from django.views.decorators.csrf import csrf_protect
+   
+   @csrf_protect
+   def mi_vista(self, request):
+       # ...
+   ```
+
+4. **Plantillas personalizadas**:  
+   Si tu vista renderiza una plantilla, asegúrate de usar el contexto adecuado:
+   
+   ```python
+   from django.shortcuts import render
+   
+   def mi_vista(self, request):
+       context = dict(self.admin_site.each_context(request))
+       return render(request, "miapp/mi_vista.html", context)
+   ```
+
+---
+
+### Buenas prácticas:
+
+- **Usa `reverse()`** para generar URLs dinámicamente.
+- **Mantén URLs limpias y descriptivas** (ej: `/admin/miapp/mimodelo/reportes/ventas/`).
+- **Documenta tus vistas personalizadas** para otros desarrolladores.
+- **Prueba todas las rutas** para evitar errores 404 o conflictos.
+
+---
+
+### Resumen:
+
+- **`get_urls`** permite extender las URLs disponibles en Django Admin.
+- Úsalo para crear vistas personalizadas como exportaciones, reportes o acciones masivas.
+- Combínalo con `admin_view()` para garantizar seguridad.
+- Es ideal para integrar funcionalidades avanzadas sin modificar la lógica principal del admin.
+
+
+
+-------------------------
+
+# @transaction.atomic
+
+El decorador `@transaction.atomic` en Django se utiliza para **garantizar la atomicidad de operaciones de base de datos**, asegurando que **todas las operaciones dentro de un bloque de código se ejecuten completamente o ninguna**. Si ocurre un error en alguna parte, todas las operaciones se deshacen (rollback), manteniendo la base de datos en un estado consistente.
+
+---
+
+### **¿Qué hace `@transaction.atomic`?**
+
+- **Inicia una transacción** cuando se ejecuta la función decorada.
+- **Confirma (commit)** los cambios si todo funciona correctamente.
+- **Deshace (rollback)** los cambios si ocurre una excepción (ej: `IntegrityError`, `ValidationError`, etc.).
+
+---
+
+### **Ejemplo básico:**
+
+```python
+from django.db import transaction
+
+@transaction.atomic
+def transferir_dinero(origen_id, destino_id, monto):
+    cuenta_origen = Cuenta.objects.select_for_update().get(id=origen_id)
+    cuenta_destino = Cuenta.objects.select_for_update().get(id=destino_id)
+
+    if cuenta_origen.saldo < monto:
+        raise ValueError("Saldo insuficiente")
+
+    cuenta_origen.saldo -= monto
+    cuenta_destino.saldo += monto
+
+    cuenta_origen.save()
+    cuenta_destino.save()
+```
+
+Si ocurre un error (ej: saldo insuficiente), **ninguna de las dos cuentas se actualiza**.
+
+---
+
+### **¿Cuándo usarlo como buena práctica?**
+
+#### 1. **Operaciones que afectan múltiples tablas/registros**
+
+- Ejemplo: Crear un pedido y actualizar el inventario.
+  
+  ```python
+  @transaction.atomic
+  def crear_pedido(usuario, productos):
+    pedido = Pedido.objects.create(usuario=usuario)
+    for producto in productos:
+        if producto.stock <= 0:
+            raise ValueError("Producto sin stock")
+        producto.stock -= 1
+        producto.save()
+        PedidoProducto.objects.create(pedido=pedido, producto=producto)
+    return pedido
+  ```
+
+#### 2. **Operaciones críticas donde la consistencia es vital**
+
+- Transferencias bancarias, compras, reservas, etc.
+- Ejemplo: Reservar una habitación y generar una factura.
+  
+  ```python
+  @transaction.atomic
+  def reservar_habitacion(habitacion_id, cliente_id):
+    habitacion = Habitacion.objects.select_for_update().get(id=habitacion_id)
+    if habitacion.ocupada:
+        raise ValueError("Habitación no disponible")
+    habitacion.ocupada = True
+    habitacion.save()
+    Factura.objects.create(cliente_id=cliente_id, habitacion=habitacion)
+  ```
+
+#### 3. **Cuando usas señales (`signals`) que modifican la base de datos**
+
+- Si una señal lanza una excepción, la transacción se deshace.
+  
+  ```python
+  @receiver(post_save, sender=Pedido)
+  def generar_factura(sender, instance, created, **kwargs):
+    if created:
+        Factura.objects.create(pedido=instance)
+  ```
+
+#### 4. **En vistas que realizan múltiples operaciones**
+
+- Ejemplo: Una vista que crea un usuario y su perfil.
+  
+  ```python
+  @transaction.atomic
+  def crear_usuario_y_perfil(request):
+    user = User.objects.create(username=request.POST["username"])
+    Perfil.objects.create(usuario=user, bio=request.POST["bio"])
+  ```
+
+#### 5. **Cuando usas `select_for_update()` para evitar condiciones de carrera**
+
+- Bloquea temporalmente filas para evitar modificaciones concurrentes.
+  
+  ```python
+  @transaction.atomic
+  def actualizar_stock(producto_id):
+    producto = Producto.objects.select_for_update().get(id=producto_id)
+    if producto.stock > 0:
+        producto.stock -= 1
+        producto.save()
+  ```
+
+---
+
+### **Ventajas de usar `@transaction.atomic`:**
+
+- **Consistencia**: Evita estados inconsistentes en la base de datos.
+- **Seguridad**: Deshace cambios si ocurre un error inesperado.
+- **Control**: Permite manejar transacciones explícitamente.
+- **Rendimiento**: Reduce el número de commits al agrupar operaciones.
+
+---
+
+### **Consideraciones y buenas prácticas:**
+
+#### 1. **Evitar operaciones largas dentro de transacciones**
+
+- Las transacciones largas bloquean filas y pueden causar problemas de concurrencia.
+- Ejemplo incorrecto:
+  
+  ```python
+  @transaction.atomic
+  def proceso_largo(datos):
+      for dato in datos:
+          time.sleep(1)  # Operación lenta
+          Procesar(dato).save()
+  ```
+
+#### 2. **Usar `select_for_update()` o `select_related()` cuando sea necesario**
+
+- Para evitar condiciones de carrera o optimizar consultas.
+
+#### 3. **Manejar excepciones dentro de la transacción**
+
+- Capturar errores y reintentar o loguear.
+  
+  ```python
+  @transaction.atomic
+  def crear_pedido(usuario, productos):
+    try:
+        # Operaciones...
+    except IntegrityError:
+        logger.error("Error de integridad")
+        raise
+  ```
+
+#### 4. **No usarlo en operaciones de solo lectura**
+
+- No es necesario si solo estás consultando datos.
+  
+  ```python
+  def obtener_datos():
+    return Modelo.objects.all()  # Sin transacción
+  ```
+
+#### 5. **Usar contexto (`with`) para bloques específicos**
+
+- En lugar de decorar toda una función.
+  
+  ```python
+  def actualizar_saldos():
+    with transaction.atomic():
+        cuenta1.saldo -= 100
+        cuenta2.saldo += 100
+        cuenta1.save()
+        cuenta2.save()
+  ```
+
+---
+
+### **Resumen**
+
+| **Caso de uso**                                   | **Recomendado usar `@transaction.atomic`** |
+| ------------------------------------------------- | ------------------------------------------ |
+| Transferencias bancarias                          | ✅ Sí                                       |
+| Actualización de múltiples registros relacionados | ✅ Sí                                       |
+| Operaciones con señales que modifican datos       | ✅ Sí                                       |
+| Consultas de solo lectura                         | ❌ No                                       |
+| Operaciones largas o con bloqueos                 | ⚠️ Solo si es estrictamente necesario      |
+
+---
+
+### **Conclusión**
+
+Usa `@transaction.atomic` **cuando la consistencia de datos es crítica** y varias operaciones deben ejecutarse juntas. Es ideal para casos como transferencias, reservas o actualizaciones relacionadas. Sin embargo, evita usarlo en operaciones simples o largas para no afectar el rendimiento del sistema.
+
+
+
+
+
+### **1. ¿Es necesario alguna configuración para usar `@transaction.atomic`?**
+
+No, **no requiere configuración adicional** en la mayoría de los casos. Django ya está preparado para usar transacciones con cualquier base de datos compatible. Solo necesitas importar `transaction` y usar el decorador o el contexto:
+
+```python
+from django.db import transaction
+
+@transaction.atomic
+def mi_funcion():
+    # Operaciones de base de datos
+```
+
+Sin embargo, hay **algunas consideraciones específicas según la base de datos** que debes tener en cuenta.
+
+---
+
+### **2. ¿Es compatible con todas las bases de datos?**
+
+No exactamente. `@transaction.atomic` **funciona en todas las bases de datos compatibles con Django**, pero su comportamiento puede variar ligeramente según el motor:
+
+| Base de datos  | Soporte   | Notas                                                                                  |
+| -------------- | --------- | -------------------------------------------------------------------------------------- |
+| **PostgreSQL** | ✅ Total   | Soporta transacciones completas, bloqueos (`select_for_update`), y savepoints.         |
+| **MySQL**      | ✅ Total   | Soporta transacciones con motores como InnoDB. MyISAM no soporta transacciones.        |
+| **SQLite**     | ✅ Parcial | Soporta transacciones básicas, pero tiene limitaciones con concurrencia y anidamiento. |
+| **Oracle**     | ✅ Total   | Soporta transacciones avanzadas.                                                       |
+| **MariaDB**    | ✅ Total   | Similar a MySQL.                                                                       |
+
+---
+
+### **3. Consideraciones específicas para PostgreSQL**
+
+PostgreSQL es el motor más robusto para transacciones. Algunas cosas a tener en cuenta:
+
+#### a. **Bloqueos con `select_for_update()`**
+
+Si usas `select_for_update()` dentro de una transacción, asegúrate de que la transacción esté bien definida. PostgreSQL requiere que estas operaciones se realicen dentro de un bloque `atomic`.
+
+```python
+@transaction.atomic
+def actualizar_stock(producto_id):
+    producto = Producto.objects.select_for_update().get(id=producto_id)
+    if producto.stock > 0:
+        producto.stock -= 1
+        producto.save()
+```
+
+#### b. **Transacciones largas**
+
+Evita transacciones muy largas (ej: bucles con miles de registros). Pueden causar:
+
+- **Problemas de rendimiento**: PostgreSQL usa MVCC (Multiversion Concurrency Control), y las transacciones largas pueden causar "bloating" en tablas.
+- **Bloqueos innecesarios**: Si bloqueas filas con `select_for_update`, otras operaciones tendrán que esperar.
+
+#### c. **Savepoints anidados**
+
+PostgreSQL permite savepoints anidados, pero Django abstrae esto. Puedes usar `atomic` dentro de otro `atomic` sin problemas.
+
+```python
+@transaction.atomic
+def outer():
+    with transaction.atomic():  # Savepoint
+        # Operaciones
+```
+
+---
+
+### **4. Consideraciones específicas para SQLite**
+
+SQLite es útil para desarrollo o prototipos, pero tiene limitaciones:
+
+#### a. **Bloqueo de la base de datos**
+
+SQLite solo permite **una escritura simultánea**. Si usas transacciones largas o múltiples conexiones concurrentes, puedes enfrentar errores de bloqueo (`database locked`).
+
+#### b. **No soporta transacciones anidadas nativas**
+
+Django simula el anidamiento con **savepoints**, pero no es tan robusto como en PostgreSQL.
+
+```python
+@transaction.atomic
+def outer():
+    with transaction.atomic():  # Simulado con savepoints
+        # Operaciones
+```
+
+#### c. **Limitaciones en concurrencia**
+
+En entornos de alta concurrencia (ej: servidores web con múltiples usuarios), SQLite no es recomendado. Usa PostgreSQL o MySQL en producción.
+
+---
+
+### **5. Buenas prácticas generales**
+
+- **Evita operaciones largas dentro de transacciones**:  
+  Reduce el tiempo que una transacción mantiene filas bloqueadas.
+
+- **Usa `select_for_update()` con cuidado**:  
+  Solo cuando sea necesario para evitar condiciones de carrera.
+
+- **Maneja excepciones**:  
+  Captura errores para evitar que la transacción falle silenciosamente.
+  
+  ```python
+  @transaction.atomic
+  def transferir(origen, destino, monto):
+      try:
+          # Operaciones
+      except Exception as e:
+          logger.error(f"Error en transacción: {e}")
+          raise
+  ```
+
+- **No uses `atomic` para consultas de solo lectura**:  
+  No es necesario y puede afectar el rendimiento.
+
+- **Prueba en producción con tu motor real**:  
+  Si desarrollas con SQLite pero usas PostgreSQL en producción, prueba en PostgreSQL antes de desplegar.
+
+---
+
+### **6. Ejemplo combinando PostgreSQL y SQLite**
+
+Si usas ambos motores (ej: desarrollo con SQLite y producción con PostgreSQL), asegúrate de que tu código no dependa de funcionalidades específicas de uno.
+
+#### Código válido para ambos:
+
+```python
+@transaction.atomic
+def crear_usuario_y_perfil(datos):
+    user = User.objects.create(**datos)
+    Perfil.objects.create(usuario=user, bio=datos["bio"])
+```
+
+#### Código problemático (solo válido en PostgreSQL):
+
+```python
+@transaction.atomic
+def usar_jsonb():
+    # JSONField solo está disponible en PostgreSQL
+    MiModelo.objects.create(json_data={"clave": "valor"})
+```
+
+---
+
+### **7. Resumen por motor**
+
+| Motor          | Transacciones | Savepoints anidados | Bloqueos                               | Recomendado para              |
+| -------------- | ------------- | ------------------- | -------------------------------------- | ----------------------------- |
+| **PostgreSQL** | ✅ Sí          | ✅ Sí                | ⚠️ Controlados con `select_for_update` | Producción, alta concurrencia |
+| **MySQL**      | ✅ Sí          | ✅ Sí                | ⚠️ Requiere InnoDB                     | Producción, alta concurrencia |
+| **SQLite**     | ✅ Sí          | ⚠️ Simulados        | ❌ Limitado (bloqueo global)            | Desarrollo, prototipos        |
+
+---
+
+### **Conclusión**
+
+- **No necesitas configuración adicional** para usar `@transaction.atomic`.
+- **PostgreSQL** es el motor más robusto para transacciones.
+- **SQLite** tiene limitaciones en concurrencia y anidamiento.
+- **Sigue buenas prácticas**: Evita transacciones largas, maneja excepciones y prueba en tu motor de producción.
+
+Si usas principalmente PostgreSQL, estás en una de las mejores bases de datos para transacciones. Si usas SQLite, sé cuidadoso con escenarios de alta concurrencia.
+
+
+
+# transaction.on_commit
+
+### **¿Qué es `transaction.on_commit` y cómo se usa con `@transaction.atomic`?**
+
+`transaction.on_commit` es una función de Django que **registra una acción (callback) que se ejecutará solo después de que una transacción de base de datos se haya confirmado (`commit`) con éxito**. Se usa dentro de bloques decorados con `@transaction.atomic` para garantizar que ciertas operaciones (como tareas en segundo plano, actualizaciones de índices de búsqueda o notificaciones) ocurran **solo si la transacción no falla**.
+
+---
+
+### **¿Por qué usarlo?**
+
+Dentro de un bloque `@transaction.atomic`, todas las operaciones de base de datos se agrupan en una transacción. Si cualquier operación falla, la transacción se deshace (`rollback`). Sin embargo, **algunas acciones no deben ejecutarse si la transacción no se confirma**, como:
+
+- Enviar correos electrónicos.
+- Iniciar tareas asíncronas (ej: Celery).
+- Actualizar índices de búsqueda (ej: Elasticsearch).
+- Registrar logs en sistemas externos.
+
+`transaction.on_commit` garantiza que estas acciones se ejecuten **solo si la transacción se confirma**.
+
+---
+
+### **Ejemplo práctico con Celery**
+
+```python
+from django.db import transaction
+from myapp.tasks import seller_assignation_by_reservations
+
+@transaction.atomic(using="default")
+def create(self, request, *args, **kwargs):
+    # Crear una instancia dentro de la transacción
+    instance = super().create(request, *args, **kwargs)
+
+    # Programar una tarea Celery solo si la transacción se confirma
+    transaction.on_commit(lambda: seller_assignation_by_reservations.delay([instance.reservation_id]))
+```
+
+#### ¿Qué sucede aquí?
+
+1. **`@transaction.atomic(using="default")`**:
+   
+   - Asegura que todas las operaciones dentro de `create()` sean atómicas.
+   - Usa la base de datos `"default"` (útil en entornos con múltiples bases de datos).
+
+2. **`instance = super().create(...)`**:
+   
+   - Crea un objeto en la base de datos, pero **todavía no se ha confirmado la transacción** (está en estado pendiente).
+
+3. **`transaction.on_commit(...)`**:
+   
+   - Registra la tarea Celery (`seller_assignation_by_reservations.delay`) para que se ejecute **después de que la transacción se confirme**.
+   - Si la transacción falla (ej: excepción), la tarea no se ejecuta.
+
+---
+
+### **¿Cómo funciona internamente?**
+
+- **Dentro de `@transaction.atomic`**:
+  
+  - Las operaciones se ejecutan en una transacción temporal.
+  - Si todo funciona, Django llama a `commit()` y ejecuta los callbacks registrados con `on_commit`.
+  - Si hay un error, Django llama a `rollback()` y **omite los callbacks**.
+
+- **Con `lambda`**:
+  
+  - `transaction.on_commit` requiere una función sin argumentos.
+  - Usar `lambda` permite pasar argumentos a la función objetivo (ej: `instance.reservation_id`).
+
+---
+
+### **Casos de uso comunes**
+
+1. **Tareas asíncronas con Celery**:
+   
+   ```python
+   transaction.on_commit(lambda: send_email.delay(user_id))
+   ```
+
+2. **Actualizar índices de búsqueda**:
+   
+   ```python
+   transaction.on_commit(lambda: update_search_index.delay(instance.pk))
+   ```
+
+3. **Registrar logs en sistemas externos**:
+   
+   ```python
+   transaction.on_commit(lambda: log_to_external_system(instance))
+   ```
+
+4. **Enviar señales post-guardado**:
+   
+   ```python
+   transaction.on_commit(lambda: post_save.send(sender=MyModel, instance=instance))
+   ```
+
+---
+
+### **Ventajas**
+
+- **Evita efectos secundarios no deseados**:  
+  Si la transacción falla, las acciones externas no se ejecutan.
+
+- **Seguridad en operaciones críticas**:  
+  Ideal para tareas que dependen de datos confirmados en la base de datos.
+
+- **Control de concurrencia**:  
+  Asegura que las acciones solo se ejecuten después de que la transacción se haya completado.
+
+---
+
+### **Consideraciones y buenas prácticas**
+
+1. **Solo funciona dentro de transacciones**:
+   
+   - Si no estás dentro de `@transaction.atomic`, `on_commit` se ejecuta inmediatamente.
+
+2. **Evita operaciones costosas en el callback**:
+   
+   - `on_commit` se ejecuta en el hilo principal, por lo que operaciones bloqueantes pueden afectar el rendimiento.
+
+3. **Manejo de errores en el callback**:
+   
+   - Si el callback lanza una excepción, **no se deshará la transacción**. Debes manejar errores dentro del callback.
+
+4. **Compatibilidad con bases de datos**:
+   
+   - Funciona en PostgreSQL, MySQL (con InnoDB), Oracle y SQLite (con limitaciones).
+
+5. **No usar con consultas de solo lectura**:
+   
+   - No es necesario si no hay modificaciones de datos.
+
+6. **Transacciones anidadas**:
+   
+   - Si usas transacciones anidadas, `on_commit` se ejecuta cuando la transacción externa se confirma.
+
+---
+
+### **Ejemplo avanzado: Múltiples callbacks**
+
+```python
+@transaction.atomic
+def procesar_pedido(usuario, productos):
+    pedido = Pedido.objects.create(usuario=usuario)
+
+    def registrar_log():
+        logger.info(f"Pedido {pedido.id} creado")
+
+    def enviar_notificacion():
+        send_notification.delay(pedido.id)
+
+    transaction.on_commit(registrar_log)
+    transaction.on_commit(enviar_notificacion)
+```
+
+---
+
+### **Resumen**
+
+| Característica     | Detalle                                                        |
+| ------------------ | -------------------------------------------------------------- |
+| **Propósito**      | Ejecutar acciones solo si una transacción se confirma.         |
+| **Uso común**      | Tareas asíncronas, actualizaciones de índices, notificaciones. |
+| **Requiere**       | Estar dentro de `@transaction.atomic`.                         |
+| **Riesgos**        | Operaciones bloqueantes en el callback, errores no manejados.  |
+| **Compatibilidad** | PostgreSQL, MySQL (InnoDB), SQLite (limitado), Oracle.         |
+
+---
+
+### **Conclusión**
+
+Usa `transaction.on_commit` **cuando necesites ejecutar acciones externas solo si una transacción se confirma con éxito**. Es ideal para integrar Django con sistemas externos (ej: Celery, Elasticsearch) o para evitar efectos secundarios en operaciones fallidas. Combínalo con `@transaction.atomic` para garantizar consistencia y seguridad en tus datos.
