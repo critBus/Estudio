@@ -238,13 +238,9 @@ Pero `@in_database("default")` es más poderoso en casos donde:
 
 Usa `@in_database("default")` cuando necesites **garantizar que un método o función use una base de datos específica**, especialmente en sistemas complejos como multi-tenant o cuando las rutas de bases de datos son dinámicas. Es una herramienta poderosa de `dynamic_db_router` para evitar errores de conexión o escritura en bases de datos incorrectas.
 
-
-
 --------
 
 # api_settings.URL_FIELD_NAME
-
-
 
 El `api_settings.URL_FIELD_NAME` en Django REST Framework (DRF) es una **configuración global** que define el nombre del campo utilizado para representar las **URLs de los recursos en serializadores hipermediales** (como `HyperlinkedModelSerializer`). Su valor predeterminado es `"url"`.
 
@@ -343,10 +339,6 @@ Esto garantiza que el encabezado `Location` siempre use el campo correcto, inclu
 
 Si estás usando `HyperlinkedModelSerializer` o necesitas referencias hipermediales, este patrón es clave para seguir buenas prácticas en DRF.
 
-
-
-
-
 # drf-yasg
 
 ## Vistas falsas
@@ -426,8 +418,6 @@ Sin esta comprobación, al generar la documentación, el método `get_queryset` 
 - **Recomendación**: Si usas `drf-yasg`, esta comprobación es útil. Si migras a `drf-spectacular`, ya no será necesaria.
 
 -----
-
-
 
 # values_list("id", flat=True)
 
@@ -554,8 +544,6 @@ Book.objects.filter(id__in=book_ids).delete()
 - Mejora el rendimiento al evitar cargar objetos completos.
 - Úsalo para filtrados (`__in`), verificaciones o serialización rápida.
 - Solo funciona con un único campo; para múltiples campos, omite `flat=True`.
-
-
 
 ----------
 
@@ -704,8 +692,6 @@ posts = Post.objects.annotate(
 - Es útil para evitar `null` en respuestas API, generar reportes o mostrar datos legibles.
 - Se evalúa directamente en la base de datos, lo que mejora el rendimiento.
 
-
-
 # django-daterangefilter
 
 ## PastDateRangeFilter
@@ -766,6 +752,7 @@ Este código añade un filtro de rango de fechas pasado para el campo `created` 
 ### Requisitos:
 
 1. El campo a filtrar debe ser de tipo `DateField` o `DateTimeField`.
+
 2. Instalar el paquete:
    
    ```bash
@@ -813,8 +800,6 @@ Seleccionar "Esta semana" mostrará solo los registros creados en los últimos 7
 - **`PastDateRangeFilter`** es una herramienta de `django-daterangefilter` para filtrar registros en Django Admin por fechas pasadas.
 - Ideal para análisis histórico de datos (ventas, usuarios, logs, etc.).
 - Mejora la experiencia de usuario con opciones predefinidas y un selector visual.
-
-
 
 # get_actions -  Admin
 
@@ -955,8 +940,6 @@ desactivar_usuarios_inactivos.short_description = "Desactivar usuarios inactivos
 - Úsalo para **agregar, eliminar o modificar acciones** según necesidades.
 - Ideal para operaciones en lote (ej: actualizar estados, enviar correos, archivar).
 - Combínalo con validaciones de permisos y mensajes para una experiencia segura y clara.
-
-
 
 -----------------
 
@@ -1144,8 +1127,6 @@ def exportar_registro(self, request, object_id):
 - Combínalo con `admin_view()` para garantizar seguridad.
 - Es ideal para integrar funcionalidades avanzadas sin modificar la lógica principal del admin.
 
-
-
 -------------------------
 
 # @transaction.atomic
@@ -1208,6 +1189,7 @@ Si ocurre un error (ej: saldo insuficiente), **ninguna de las dos cuentas se act
 #### 2. **Operaciones críticas donde la consistencia es vital**
 
 - Transferencias bancarias, compras, reservas, etc.
+
 - Ejemplo: Reservar una habitación y generar una factura.
   
   ```python
@@ -1272,6 +1254,7 @@ Si ocurre un error (ej: saldo insuficiente), **ninguna de las dos cuentas se act
 #### 1. **Evitar operaciones largas dentro de transacciones**
 
 - Las transacciones largas bloquean filas y pueden causar problemas de concurrencia.
+
 - Ejemplo incorrecto:
   
   ```python
@@ -1339,10 +1322,6 @@ Si ocurre un error (ej: saldo insuficiente), **ninguna de las dos cuentas se act
 ### **Conclusión**
 
 Usa `@transaction.atomic` **cuando la consistencia de datos es crítica** y varias operaciones deben ejecutarse juntas. Es ideal para casos como transferencias, reservas o actualizaciones relacionadas. Sin embargo, evita usarlo en operaciones simples o largas para no afectar el rendimiento del sistema.
-
-
-
-
 
 ### **1. ¿Es necesario alguna configuración para usar `@transaction.atomic`?**
 
@@ -1507,8 +1486,6 @@ def usar_jsonb():
 - **Sigue buenas prácticas**: Evita transacciones largas, maneja excepciones y prueba en tu motor de producción.
 
 Si usas principalmente PostgreSQL, estás en una de las mejores bases de datos para transacciones. Si usas SQLite, sé cuidadoso con escenarios de alta concurrencia.
-
-
 
 # transaction.on_commit
 
@@ -1682,3 +1659,550 @@ def procesar_pedido(usuario, productos):
 ### **Conclusión**
 
 Usa `transaction.on_commit` **cuando necesites ejecutar acciones externas solo si una transacción se confirma con éxito**. Es ideal para integrar Django con sistemas externos (ej: Celery, Elasticsearch) o para evitar efectos secundarios en operaciones fallidas. Combínalo con `@transaction.atomic` para garantizar consistencia y seguridad en tus datos.
+
+
+
+
+
+
+
+
+
+---------------
+
+# nested_admin
+
+`nested_admin` es una **librería de Django** que permite crear **inlines anidados** en la interfaz de administración de Django. Esto significa que puedes editar modelos relacionados en una sola página, incluso si esos modelos tienen relaciones jerárquicas (por ejemplo, un modelo padre con hijos, y cada hijo con nietos).
+
+---
+
+### **¿Por qué usar `nested_admin`?**
+
+1. **Editar relaciones jerárquicas en una sola pantalla**:  
+   Permite gestionar objetos relacionados con múltiples niveles de profundidad sin tener que navegar entre diferentes páginas del admin.
+
+2. **Flujo de trabajo simplificado**:  
+   Ideal para formularios complejos donde necesitas crear/editar varios modelos relacionados en un solo paso (por ejemplo, órdenes con productos, productos con características específicas, etc.).
+
+3. **Mejora la experiencia del usuario**:  
+   Reduce el número de clics y evita la fragmentación de datos en múltiples pantallas.
+
+---
+
+### **Ejemplo práctico: Ordenes con productos y características**
+
+Vamos a crear un ejemplo donde:
+
+- Una `Order` (orden) tiene múltiples `OrderItem` (items de la orden).
+- Cada `OrderItem` tiene múltiples `OrderItemDetail` (detalles del item).
+
+#### **1. Instalación**
+
+```bash
+pip install django-nested-admin
+```
+
+Agrega `nested_admin` a `INSTALLED_APPS` en `settings.py`:
+
+```python
+INSTALLED_APPS = [
+    ...
+    'nested_admin',
+]
+```
+
+#### **2. Modelos**
+
+En `myapp/models.py`:
+
+```python
+from django.db import models
+
+class Order(models.Model):
+    customer_name = models.CharField(max_length=100)
+    date = models.DateField()
+
+    def __str__(self):
+        return self.customer_name
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    product_name = models.CharField(max_length=100)
+    quantity = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.product_name} ({self.quantity})"
+
+class OrderItemDetail(models.Model):
+    item = models.ForeignKey(OrderItem, on_delete=models.CASCADE)
+    key = models.CharField(max_length=50)
+    value = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.key}: {self.value}"
+```
+
+Ejecuta las migraciones:
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+#### **3. Admin con inlines anidados**
+
+En `myapp/admin.py`:
+
+```python
+import nested_admin
+from django.contrib import admin
+from .models import Order, OrderItem, OrderItemDetail
+
+class OrderItemDetailInline(nested_admin.NestedTabularInline):
+    model = OrderItemDetail
+    extra = 1  # Número de campos adicionales para agregar detalles
+
+class OrderItemInline(nested_admin.NestedTabularInline):
+    model = OrderItem
+    inlines = [OrderItemDetailInline]  # Inline anidado
+    extra = 1
+
+@admin.register(Order)
+class OrderAdmin(nested_admin.NestedModelAdmin):
+    inlines = [OrderItemInline]  # Primer nivel de inline
+```
+
+#### **4. Resultado**
+
+Al acceder a la página de edición de una `Order` en el admin:
+
+- Podrás agregar/editar `OrderItem` directamente.
+- Dentro de cada `OrderItem`, podrás agregar/editar `OrderItemDetail`.
+
+---
+
+### **Ventajas clave**
+
+- **Jerarquía visual clara**: Los inlines anidados se muestran como bloques dentro de otros bloques.
+- **Edición en tiempo real**: No necesitas guardar la orden principal antes de agregar items o detalles.
+- **Compatibilidad con Django Admin**: Funciona con las herramientas estándar de Django (filtros, acciones, etc.).
+
+---
+
+### **Casos de uso típicos**
+
+- **E-commerce**: Órdenes con productos y atributos personalizados.
+- **CMS**: Páginas con secciones y subsecciones.
+- **Encuestas**: Preguntas con opciones y respuestas anidadas.
+
+---
+
+### **Notas importantes**
+
+- **Limitaciones**: No es ideal para relaciones muy profundas (más de 2-3 niveles) por cuestiones de usabilidad.
+- **Dependencias**: Asegúrate de incluir los archivos estáticos de `nested_admin` (generalmente se cargan automáticamente).
+- **Compatibilidad**: Verifica que funcione con tu versión de Django (revisa la [documentación oficial](https://django-nested-admin.readthedocs.io/)).
+
+Este ejemplo muestra cómo `nested_admin` simplifica la gestión de datos jerárquicos. ¡Adapta los modelos según tus necesidades!
+
+------------------
+
+
+
+# django-dynamic-db-router
+
+Voy a crearte un tutorial completo para entender y usar `django-dynamic-db-router`. Este ejemplo incluirá:
+
+1. Configuración básica del proyecto
+2. Ejemplo de modelos
+3. Configuración de múltiples bases de datos
+4. Uso del router dinámico
+5. Ventajas de esta librería
+6. Seed con django-seed
+
+## 1. Instalación
+
+Primero instala la librería:
+
+```bash
+pip install django-dynamic-db-router
+```
+
+## 2. Configuración del proyecto
+
+En `settings.py`:
+
+```python
+# settings.py
+
+INSTALLED_APPS = [
+    ...
+    'dynamic_db_router',  # Añade esto
+    'mi_app',
+]
+
+# Configuración de múltiples bases de datos
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db_default.sqlite3',
+    },
+    'clientes_db': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db_clientes.sqlite3',
+    },
+    'productos_db': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db_productos.sqlite3',
+    }
+}
+
+# Configura el router dinámico
+DATABASE_ROUTERS = ['dynamic_db_router.DynamicDbRouter']
+```
+
+## 3. Modelos de ejemplo
+
+En `mi_app/models.py`:
+
+```python
+from django.db import models
+
+class Cliente(models.Model):
+    nombre = models.CharField(max_length=100)
+    email = models.EmailField()
+
+    class Meta:
+        db_table = 'clientes'  # Tabla en clientes_db
+
+class Producto(models.Model):
+    nombre = models.CharField(max_length=100)
+    precio = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        db_table = 'productos'  # Tabla en productos_db
+```
+
+## 4. Configuración del router
+
+Crea un archivo `router_config.py`:
+
+```python
+# router_config.py
+from dynamic_db_router import DynamicDbRouter
+
+class MiRouter(DynamicDbRouter):
+    def db_for_read(self, model, **hints):
+        if model._meta.model_name == 'cliente':
+            return 'clientes_db'
+        elif model._meta.model_name == 'producto':
+            return 'productos_db'
+        return None
+
+    def db_for_write(self, model, **hints):
+        if model._meta.model_name == 'cliente':
+            return 'clientes_db'
+        elif model._meta.model_name == 'producto':
+            return 'productos_db'
+        return None
+```
+
+Y actualiza `settings.py`:
+
+```python
+# settings.py
+DATABASE_ROUTERS = ['mi_app.router_config.MiRouter']
+```
+
+## 5. Migraciones y sincronización
+
+Ejecuta estos comandos:
+
+```bash
+# Crea migraciones para todos las bases de datos
+python manage.py makemigrations --database=default
+python manage.py makemigrations --database=clientes_db
+python manage.py makemigrations --database=productos_db
+
+# Aplica migraciones a todas las bases de datos
+python manage.py migrate --database=default
+python manage.py migrate --database=clientes_db
+python manage.py migrate --database=productos_db
+
+# O usa el comando sync_all_dbs (proporcionado por la librería)
+python manage.py sync_all_dbs
+```
+
+## 6. Ejemplo de uso
+
+```python
+# Crear registros
+cliente = Cliente.objects.create(nombre='Juan', email='juan@example.com')
+producto = Producto.objects.create(nombre='Laptop', precio=999.99)
+
+# Consultar registros (cada uno en su base de datos)
+print(Cliente.objects.all())     # Usará clientes_db
+print(Producto.objects.all())    # Usará productos_db
+```
+
+## 7. Seed con django-seed
+
+Instala django-seed si no lo tienes:
+
+```bash
+pip install django-seed
+```
+
+En `views.py` o un management command:
+
+```python
+from django_seed import Seed
+from mi_app.models import Cliente, Producto
+
+def seed_data():
+    seeder = Seed.seeder()
+
+    # Seed para clientes_db
+    seeder.add_entity(Cliente, 5, {
+        'nombre': lambda x: seeder.faker.name(),
+        'email': lambda x: seeder.faker.email()
+    })
+
+    # Seed para productos_db
+    seeder.add_entity(Producto, 3, {
+        'nombre': lambda x: seeder.faker.word(),
+        'precio': lambda x: seeder.faker.random.uniform(10, 1000)
+    })
+
+    # Ejecutar seed en las bases de datos correctas
+    inserted_pks = seeder.execute(db='clientes_db')  # Para clientes
+    inserted_pks = seeder.execute(db='productos_db')  # Para productos
+```
+
+Ejecuta el seed:
+
+```bash
+python manage.py shell -c "from mi_app.views import seed_data; seed_data()"
+```
+
+## 8. Beneficios de usar django-dynamic-db-router
+
+1. **Arquitectura multitenant**: Permite tener datos de diferentes clientes en bases de datos separadas.
+
+2. **Escalabilidad**: Puedes escalar horizontalmente distribuyendo carga entre diferentes bases de datos.
+
+3. **Aislamiento de datos**: Datos críticos pueden almacenarse en bases de datos separadas con diferentes políticas de seguridad.
+
+4. **Optimización de rendimiento**: Consultas pesadas pueden dirigirse a bases de datos dedicadas.
+
+5. **Flexibilidad**: Soporta múltiples tipos de bases de datos (PostgreSQL, MySQL, SQLite, etc.)
+
+6. **Fácil de mantener**: Evita el uso de múltiples routers estáticos, centralizando la lógica de routing.
+
+7. **Soporte para transacciones distribuidas**: Permite trabajar con múltiples bases de datos en una sola aplicación.
+
+8. **Compatibilidad con Django ORM**: Todo el poder del ORM de Django sigue funcionando normalmente.
+
+## 9. Comandos útiles
+
+```bash
+# Ver todas las bases de datos configuradas
+python manage.py show_all_dbs
+
+# Copiar datos entre bases de datos
+python manage.py copy_db_content --source=clientes_db --target=clientes_backup
+
+# Backup de una base de datos específica
+python manage.py dbbackup --database=clientes_db
+```
+
+## 10. Consideraciones importantes
+
+1. **Transacciones**: Ten cuidado al usar transacciones entre bases de datos (Django no soporta transacciones multi-db nativamente)
+
+2. **Relaciones cruzadas**: Evita relaciones ForeignKey entre modelos que están en diferentes bases de datos
+
+3. **Caché**: Considera implementar una capa de caché cuando accedas a múltiples bases de datos
+
+4. **Testing**: Usa `TransactionTestCase` en lugar de `TestCase` cuando pruebes operaciones entre múltiples bases de datos
+
+Este ejemplo te permite crear una arquitectura flexible donde puedes escalar fácilmente añadiendo nuevas bases de datos y actualizando la configuración del router. La principal ventaja de esta librería es que te permite manejar múltiples bases de datos de forma dinámica y flexible sin tener que escribir código repetitivo para cada base de datos.
+
+
+
+## Pq usarlo?
+
+La diferencia entre los **routers de base de datos estándar de Django** y los que ofrece **`django-dynamic-db-router`** es clave para entender por qué esta librería puede ser útil en ciertos escenarios. Vamos a desglosarlo con un ejemplo práctico y un caso de uso real: **una aplicación multi-tenant (multi-inquilino)**.
+
+---
+
+### **1. Routers estándar de Django: ¿qué hacen?**
+
+En Django, puedes definir routers personalizados para asignar modelos a bases de datos específicas. Por ejemplo:
+
+```python
+# settings.py
+DATABASES = {
+    'default': {...},
+    'clientes_db': {...},
+    'productos_db': {...}
+}
+
+DATABASE_ROUTERS = ['mi_app.routers.AppRouter']
+```
+
+```python
+# mi_app/routers.py
+class AppRouter:
+    def db_for_read(self, model, **hints):
+        if model._meta.app_label == 'clientes':
+            return 'clientes_db'
+        elif model._meta.app_label == 'productos':
+            return 'productos_db'
+        return None
+
+    def db_for_write(self, model, **hints):
+        # Lógica similar
+        ...
+```
+
+#### **Limitaciones de los routers estándar:**
+
+- **Asignación estática**: La lógica del router se basa en el modelo o la app, no en el contexto de la petición (request).
+- **No dinámico**: No puedes cambiar la base de datos en tiempo de ejecución basándote en parámetros como subdominios, headers, o usuarios.
+- **Complejidad en multi-tenant**: Si cada cliente (tenant) tiene su propia base de datos, tendrías que crear un router por cada cliente, lo cual es inviable.
+
+---
+
+### **2. ¿Qué aporta `django-dynamic-db-router`?**
+
+Esta librería introduce **ruteo dinámico basado en el contexto de la petición**. Es ideal para escenarios donde la base de datos depende de factores externos, como:
+
+- **Aplicaciones multi-tenant**: Cada cliente (tenant) tiene su propia base de datos.
+- **A/B testing**: Usar diferentes bases de datos para grupos de usuarios.
+- **Read replicas**: Distribuir consultas a bases de datos secundarias.
+
+#### **Ejemplo: Aplicación multi-tenant**
+
+Imagina que cada cliente accede a tu aplicación con un subdominio único:  
+`cliente1.miapp.com`, `cliente2.miapp.com`, etc.
+
+Con `django-dynamic-db-router`, puedes asignar dinámicamente la base de datos según el subdominio:
+
+```python
+# mi_app/router_config.py
+from dynamic_db_router import DynamicDbRouter
+
+class TenantRouter(DynamicDbRouter):
+    def get_db_name(self, request=None, **kwargs):
+        # Extraer el subdominio del request
+        host = request.get_host().split('.')[0]  # Ej: "cliente1"
+        return f"tenant_{host}"  # Base de datos: tenant_cliente1
+```
+
+```python
+# settings.py
+DATABASE_ROUTERS = ['mi_app.router_config.TenantRouter']
+```
+
+#### **Ventajas clave:**
+
+1. **Ruteo contextual**: Usa el objeto `request` para decidir qué base de datos usar.
+2. **Bases de datos dinámicas**: No necesitas definirlas previamente en `DATABASES`. La librería las crea automáticamente si no existen.
+3. **Gestión simplificada**: Evita tener que escribir múltiples routers estáticos.
+4. **Migraciones por tenant**: Puedes aplicar migraciones a todas las bases de datos con un solo comando:
+   
+   ```bash
+   python manage.py sync_all_dbs
+   ```
+
+---
+
+### **3. Comparativa directa**
+
+| Característica                   | Routers estándar de Django                  | `django-dynamic-db-router`         |
+| -------------------------------- | ------------------------------------------- | ---------------------------------- |
+| **Contexto de ruteo**            | Solo modelo/app                             | Basado en `request`, headers, etc. |
+| **Creación de bases de datos**   | Manual                                      | Automática (si no existen)         |
+| **Configuración de `DATABASES`** | Requiere todas las bases de datos definidas | No requiere definirlas previamente |
+| **Escalabilidad**                | Limitada (máximo ~5-10 bases)               | Ideal para cientos de bases        |
+| **Uso en multi-tenant**          | No viable                                   | Optimizado                         |
+
+---
+
+### **4. ¿Cuándo usar cada uno?**
+
+- **Usa routers estándar** si:
+  
+  - Tienes un número fijo de bases de datos (ej: una para logs, otra para usuarios).
+  - No necesitas cambiar la base de datos en tiempo de ejecución.
+
+- **Usa `django-dynamic-db-router` si**:
+  
+  - Tienes un sistema multi-tenant.
+  - Necesitas bases de datos dinámicas (ej: por usuario, región, o entorno).
+  - Quieres evitar configurar manualmente cada base de datos en `settings.py`.
+
+---
+
+### **5. Ejemplo práctico: Multi-tenant con subdominios**
+
+#### **Paso 1: Configura el router**
+
+```python
+# mi_app/router_config.py
+from dynamic_db_router import DynamicDbRouter
+
+class TenantRouter(DynamicDbRouter):
+    def get_db_name(self, request=None, **hints):
+        if request:
+            subdomain = request.get_host().split('.')[0]
+            return f"tenant_{subdomain}"
+        return "default"
+```
+
+#### **Paso 2: Define modelos comunes**
+
+```python
+# mi_app/models.py
+from django.db import models
+
+class Cliente(models.Model):
+    nombre = models.CharField(max_length=100)
+
+class Pedido(models.Model):
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+```
+
+#### **Paso 3: Accede a datos según el subdominio**
+
+```python
+# Vista ejemplo
+def dashboard(request):
+    # Django usará automáticamente la base de datos del tenant actual
+    clientes = Cliente.objects.all()  # SELECT * FROM clientes (en tenant_cliente1)
+    return render(request, 'dashboard.html', {'clientes': clientes})
+```
+
+#### **Resultado:**
+
+- `cliente1.miapp.com`: Datos en `tenant_cliente1`.
+- `cliente2.miapp.com`: Datos en `tenant_cliente2`.
+
+---
+
+### **6. ¿Por qué esta librería es útil?**
+
+- **Abstrae complejidad**: Evita tener que gestionar conexiones manuales a múltiples bases de datos.
+- **Dinamismo**: Permite que la lógica de ruteo dependa de cualquier factor externo (ej: API keys, headers, usuarios).
+- **Escalabilidad**: Ideal para SaaS con miles de clientes.
+
+---
+
+### **Conclusión**
+
+- **Django's routers** son perfectos para casos simples con bases de datos estáticas.
+- **`django-dynamic-db-router`** es esencial para arquitecturas avanzadas como multi-tenant, donde la base de datos depende del contexto de la petición.
+
+Si estás construyendo una aplicación donde cada cliente necesita su propia base de datos (como en SaaS), esta librería te ahorrará horas de código personalizado y problemas de gestión.
