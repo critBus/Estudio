@@ -1660,14 +1660,6 @@ def procesar_pedido(usuario, productos):
 
 Usa `transaction.on_commit` **cuando necesites ejecutar acciones externas solo si una transacción se confirma con éxito**. Es ideal para integrar Django con sistemas externos (ej: Celery, Elasticsearch) o para evitar efectos secundarios en operaciones fallidas. Combínalo con `@transaction.atomic` para garantizar consistencia y seguridad en tus datos.
 
-
-
-
-
-
-
-
-
 ---------------
 
 # nested_admin
@@ -1806,8 +1798,6 @@ Al acceder a la página de edición de una `Order` en el admin:
 Este ejemplo muestra cómo `nested_admin` simplifica la gestión de datos jerárquicos. ¡Adapta los modelos según tus necesidades!
 
 ------------------
-
-
 
 # django-dynamic-db-router
 
@@ -2028,8 +2018,6 @@ python manage.py dbbackup --database=clientes_db
 
 Este ejemplo te permite crear una arquitectura flexible donde puedes escalar fácilmente añadiendo nuevas bases de datos y actualizando la configuración del router. La principal ventaja de esta librería es que te permite manejar múltiples bases de datos de forma dinámica y flexible sin tener que escribir código repetitivo para cada base de datos.
 
-
-
 ## Pq usarlo?
 
 La diferencia entre los **routers de base de datos estándar de Django** y los que ofrece **`django-dynamic-db-router`** es clave para entender por qué esta librería puede ser útil en ciertos escenarios. Vamos a desglosarlo con un ejemplo práctico y un caso de uso real: **una aplicación multi-tenant (multi-inquilino)**.
@@ -2108,8 +2096,11 @@ DATABASE_ROUTERS = ['mi_app.router_config.TenantRouter']
 #### **Ventajas clave:**
 
 1. **Ruteo contextual**: Usa el objeto `request` para decidir qué base de datos usar.
+
 2. **Bases de datos dinámicas**: No necesitas definirlas previamente en `DATABASES`. La librería las crea automáticamente si no existen.
+
 3. **Gestión simplificada**: Evita tener que escribir múltiples routers estáticos.
+
 4. **Migraciones por tenant**: Puedes aplicar migraciones a todas las bases de datos con un solo comando:
    
    ```bash
@@ -2206,3 +2197,436 @@ def dashboard(request):
 - **`django-dynamic-db-router`** es esencial para arquitecturas avanzadas como multi-tenant, donde la base de datos depende del contexto de la petición.
 
 Si estás construyendo una aplicación donde cada cliente necesita su propia base de datos (como en SaaS), esta librería te ahorrará horas de código personalizado y problemas de gestión.
+
+# Cache
+
+### Diferencias entre **Memcached** y **Redis** en Django (y en general):
+
+Ambos son sistemas de caché en memoria, pero tienen diferencias clave en funcionalidad, flexibilidad y uso. Aquí te explico las diferencias más relevantes:
+
+---
+
+### 1. **Modelo de datos**
+
+- **Memcached**:
+  
+  - Solo almacena **pares clave-valor simples** (strings).
+  - No admite estructuras de datos complejas (listas, hashes, sets, etc.).
+  - Es ideal para casos de uso sencillos: cachear resultados de consultas, sesiones, etc.
+
+- **Redis**:
+  
+  - Almacena **tipos de datos avanzados**: strings, hashes, lists, sets, sorted sets, bitmaps, hyperloglogs, etc.
+  - Permite operaciones complejas (ej.: incrementar un contador, agregar elementos a una lista, etc.).
+  - Es más versátil para casos de uso avanzados (ej.: colas de mensajes, contadores en tiempo real, pub/sub).
+
+---
+
+### 2. **Persistencia**
+
+- **Memcached**:
+  
+  - **No persiste datos en disco**. Todo se almacena en memoria RAM, por lo que se pierde al reiniciar.
+  - Ideal para cachés temporales.
+
+- **Redis**:
+  
+  - **Puede persistir datos en disco** (opcional).
+  - Soporta dos modos de persistencia:
+    - **RDB**: Volcado periódico de datos en memoria a disco.
+    - **AOF**: Registro de todas las operaciones en un log (más seguro, pero consume más espacio).
+
+---
+
+### 3. **Límites en las claves (keys)**
+
+Aquí entra tu pregunta sobre el error de formato de la clave. Ambos tienen límites, pero Redis es más flexible:
+
+#### **Memcached**
+
+- **Longitud máxima de la clave**: 250 bytes (aproximadamente 250 caracteres).
+
+- **Caracteres permitidos**: No permite espacios, newlines, carriage returns ni otros caracteres de control.
+
+- **Ejemplo de clave inválida**:
+  
+  ```python
+  cache.get("usuario:123 perfil")  # Error por el espacio
+  ```
+
+#### **Redis**
+
+- **Longitud máxima de la clave**: 512 MB (prácticamente ilimitada).
+
+- **Caracteres permitidos**: Es **binario-safe**, acepta cualquier carácter (incluyendo espacios, emojis, etc.).
+
+- **Ejemplo de clave válida**:
+  
+  ```python
+  cache.get("usuario:123 perfil")  # Funciona en Redis
+  ```
+
+---
+
+### 4. **Django y el formato de las claves**
+
+En Django, aunque uses Redis, el **framework aplica validaciones adicionales** a las claves de caché para evitar problemas con backends menos flexibles (como Memcached). Por ejemplo:
+
+- Django **sanitiza automáticamente las claves** usando `make_key`.
+- Si una clave excede el límite de Memcached (250 bytes), Django la **trunca o lanza un error** (según configuración).
+
+#### Ejemplo:
+
+```python
+from django.core.cache import cache
+
+# Si usas Memcached, esto podría fallar por el espacio
+cache.get("usuario:123 perfil")
+
+# Django lo transforma internamente a algo como:
+# "usuario:123_perfil" (reemplaza espacios por "_")
+```
+
+---
+
+### 5. **Errores comunes en claves**
+
+El error que mencionas probablemente sea causado por:
+
+- Usar **caracteres no permitidos** (ej.: control characters).
+- Sobrepasar el límite de longitud (especialmente en Memcached).
+- Usar objetos no serializables como claves (ej.: `cache.get(objeto)` sin convertirlo a string).
+
+#### Solución:
+
+- Usa `make_key` para sanitizar claves:
+  
+  ```python
+  from django.utils.cache import get_cache_key
+  from django.http import HttpRequest
+  
+  request = HttpRequest()
+  cache_key = get_cache_key(request)  # Genera una clave segura
+  ```
+
+- Valida manualmente la longitud:
+  
+  ```python
+  if len(cache_key) > 250:
+      raise ValueError("Clave demasiado larga para Memcached")
+  ```
+
+---
+
+### 6. **Rendimiento y escalabilidad**
+
+- **Memcached**:
+  
+  - Más rápido para operaciones simples.
+  - Escala horizontalmente mediante múltiples nodos (no comparte estado entre ellos).
+  - Ideal para cachés distribuidos en grandes aplicaciones web.
+
+- **Redis**:
+  
+  - Ligeramente más lento en operaciones simples, pero compensa con funcionalidad avanzada.
+  - Soporta replicación y clústeres para alta disponibilidad.
+  - Ideal para casos donde necesitas atomicidad, transacciones o estructuras de datos complejas.
+
+---
+
+### 7. **Uso en Django**
+
+En Django, ambos se configuran como backends de caché en `settings.py`:
+
+#### **Memcached**:
+
+```python
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
+}
+```
+
+#### **Redis**:
+
+```python
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/0',
+    }
+}
+```
+
+---
+
+### ¿Cuál elegir?
+
+- **Memcached**: Si necesitas velocidad extrema y solo usas caché simple.
+- **Redis**: Si necesitas persistencia, estructuras de datos avanzadas o funcionalidades como pub/sub, locks, etc.
+
+---
+
+# 
+
+# through
+
+El atributo `through` en un campo `ManyToManyField` de Django **se utiliza para especificar un modelo intermedio personalizado** que gestiona la relación muchos-a-muchos, en lugar del modelo intermedio automático que crea Django por defecto. Esto permite agregar **campos adicionales** o **lógica personalizada** a la relación entre dos modelos.
+
+---
+
+### **¿Cuándo usar `through`?**
+
+Usas `through` cuando necesitas **almacenar información extra sobre la relación** entre los objetos relacionados. Por ejemplo:
+
+- Estado de la relación (activa, pendiente, etc.).
+- Fechas de inicio/fin de la relación.
+- Metadatos específicos de la conexión (por ejemplo, comisiones, prioridad, etc.).
+
+---
+
+### **Ejemplo práctico**
+
+En tu código:
+
+```python
+programs = models.ManyToManyField(
+    AffiliateProgram, 
+    verbose_name=_("Affiliate programs"), 
+    through="AffiliateMembership"
+)
+```
+
+Esto indica que la relación entre tu modelo y `AffiliateProgram` se gestionará a través del modelo `AffiliateMembership`, que tú defines. 
+
+---
+
+### **Definición del modelo `AffiliateMembership`**
+
+El modelo intermedio debe tener **claves foráneas (ForeignKey)** a ambos modelos involucrados en la relación. Por ejemplo:
+
+```python
+class AffiliateMembership(models.Model):
+    main_model = models.ForeignKey("TuModeloPrincipal", on_delete=models.CASCADE)
+    affiliate_program = models.ForeignKey("AffiliateProgram", on_delete=models.CASCADE)
+
+    # Campos adicionales
+    joined_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=[("active", "Active"), ("inactive", "Inactive")])
+    commission_rate = models.DecimalField(max_digits=5, decimal_places=2)
+```
+
+---
+
+### **Ventajas de usar `through`**
+
+1. **Datos adicionales en la relación**:
+   - Puedes almacenar información específica de cada conexión entre objetos.
+2. **Control completo**:
+   - Puedes validar, filtrar o modificar la relación según los campos extras.
+3. **Flexibilidad**:
+   - Permite relaciones más complejas (ej: relaciones con metadatos dinámicos).
+
+---
+
+### **Cómo trabajar con `through`**
+
+- **Crear una relación**:
+  
+  ```python
+  membership = AffiliateMembership.objects.create(
+      main_model=mi_objeto,
+      affiliate_program=programa,
+      status="active",
+      commission_rate=5.5
+  )
+  ```
+
+- **Acceder a las relaciones**:
+  
+  ```python
+  for membership in mi_objeto.affiliate_membership_set.all():
+      print(membership.affiliate_program, membership.status)
+  ```
+
+- **Filtrar relaciones**:
+  
+  ```python
+  active_programs = mi_objeto.programs.filter(affiliate_membership__status="active")
+  ```
+
+---
+
+### **Notas importantes**
+
+- **No uses `add()` o `remove()` directamente**:
+  Si usas un modelo intermedio personalizado, debes crear y eliminar instancias de `AffiliateMembership` manualmente. Métodos como `add()` o `set()` no funcionan automáticamente.
+
+- **Especifica `through_fields` si hay ambigüedad**:
+  Si el modelo intermedio tiene múltiples claves foráneas a los mismos modelos, debes indicar explícitamente cuáles usar:
+  
+  ```python
+  programs = models.ManyToManyField(
+      AffiliateProgram, 
+      through="AffiliateMembership",
+      through_fields=("main_model", "affiliate_program")
+  )
+  ```
+
+---
+
+### **Resumen**
+
+- **`through`**: Define un modelo personalizado para la relación muchos-a-muchos.
+- **Usa `through` cuando necesitas campos extra o lógica específica en la relación**.
+- **El modelo intermedio debe tener ForeignKey a ambos modelos relacionados**.
+- **Evita métodos como `add()` y trabaja directamente con el modelo intermedio**.
+
+Con esto, puedes gestionar relaciones complejas en Django de manera flexible y con metadatos adicionales. 🚀
+
+---------
+
+Cuando usas un modelo intermedio personalizado (`through`) en una relación `ManyToManyField`, **Django no permite usar `filter_horizontal` o `filter_vertical`** directamente porque estos widgets están diseñados para relaciones simples sin campos adicionales. Sin embargo, hay alternativas que puedes implementar para mantener una interfaz de administración usable.
+
+---
+
+### **¿Por qué no funciona `filter_horizontal` con `through`?**
+
+- `filter_horizontal` genera un widget de selección múltiple con búsqueda y filtros, pero **solo funciona para relaciones `ManyToManyField` sin modelo intermedio**.
+- Al usar `through`, Django requiere que manejes la relación a través del modelo intermedio, lo que inhabilita automáticamente los widgets predeterminados.
+
+---
+
+### **Alternativa 1: Usar `TabularInline` o `StackedInline`**
+
+La solución más común es **mostrar el modelo intermedio como un inline en el admin**. Esto permite editar las relaciones junto con sus campos adicionales.
+
+#### **Paso 1: Define el inline**
+
+```python
+# admin.py
+from django.contrib import admin
+from .models import TuModeloPrincipal, AffiliateMembership
+
+class AffiliateMembershipInline(admin.TabularInline):  # Puedes usar StackedInline si prefieres
+    model = AffiliateMembership
+    extra = 1  # Número de filas vacías para agregar nuevas relaciones
+
+@admin.register(TuModeloPrincipal)
+class TuModeloAdmin(admin.ModelAdmin):
+    inlines = [AffiliateMembershipInline]
+```
+
+#### **Resultado**
+
+- En el admin de `TuModeloPrincipal`, verás una tabla donde puedes:
+  - Seleccionar `AffiliateProgram`.
+  - Editar campos adicionales (ej: `status`, `commission_rate`).
+  - Agregar/eliminar relaciones.
+
+#### **Ventajas**
+
+- Permite editar campos del modelo intermedio.
+- Compatible con cualquier configuración de `through`.
+
+#### **Desventajas**
+
+- No ofrece el widget de búsqueda dual de `filter_horizontal`.
+
+---
+
+### **Alternativa 2: Crear un campo proxy temporal en el admin**
+
+Si insistes en usar `filter_horizontal`, puedes **crear un campo temporal en el admin** que ignore el modelo intermedio, pero esto implica un manejo manual de datos.
+
+#### **Paso 1: Agrega un campo temporal en el admin**
+
+```python
+# admin.py
+from django import forms
+from django.contrib import admin
+from .models import TuModeloPrincipal, AffiliateProgram, AffiliateMembership
+
+class TuModeloForm(forms.ModelForm):
+    programs_proxy = forms.ModelMultipleChoiceField(
+        queryset=AffiliateProgram.objects.all(),
+        required=False,
+        widget=admin.widgets.FilteredSelectMultiple("Affiliate Programs", is_stacked=False)
+    )
+
+    class Meta:
+        model = TuModeloPrincipal
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.initial['programs_proxy'] = self.instance.programs.values_list('id', flat=True)
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+        # Actualiza las relaciones
+        instance.programs.clear()
+        for program in self.cleaned_data['programs_proxy']:
+            AffiliateMembership.objects.get_or_create(
+                main_model=instance,
+                affiliate_program=program
+            )
+        return instance
+
+@admin.register(TuModeloPrincipal)
+class TuModeloAdmin(admin.ModelAdmin):
+    form = TuModeloForm
+    filter_horizontal = ['programs_proxy']  # Usa el campo proxy
+```
+
+#### **Ventajas**
+
+- Mantiene el widget de `filter_horizontal`.
+- Útil para relaciones simples donde no necesitas editar campos del modelo intermedio.
+
+#### **Desventajas**
+
+- Requiere manejar manualmente la sincronización con el modelo intermedio.
+- Puede causar inconsistencias si otros campos del modelo intermedio (ej: `status`, `commission_rate`) no se gestionan.
+
+---
+
+### **Alternativa 3: Usar un widget personalizado (avanzado)**
+
+Si necesitas un widget similar a `filter_horizontal` pero con soporte para campos adicionales, puedes crear uno personalizado con JavaScript y Django Admin Actions.
+
+#### **Paso 1: Extender el template del admin**
+
+1. Crea un archivo `templates/admin/change_form.html` en tu app.
+2. Inyecta JavaScript para manejar la lógica de selección múltiple y campos adicionales.
+
+```html
+<!-- templates/admin/change_form.html -->
+{% extends "admin/change_form.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+<script>
+// Lógica personalizada para manejar relaciones con campos adicionales
+</script>
+{% endblock %}
+```
+
+#### **Paso 2: Usar Django Grappelli o第三方 widgets**
+
+Considera usar [Django Grappelli](https://django-grappelli.readthedocs.io/) o [Django Suit](https://github.com/darklow/django-suit), que ofrecen widgets avanzados para relaciones complejas.
+
+---
+
+### **Conclusión**
+
+- **Mejor opción**: Usa `TabularInline` para mostrar el modelo intermedio directamente en el admin. Es la solución más robusta y compatible.
+- **Si necesitas `filter_horizontal`**: Crea un campo proxy temporal, pero ten cuidado con la sincronización de datos.
+- **Para casos avanzados**: Personaliza el widget del admin con JavaScript o usa paquetes de terceros.
+
+Con estas alternativas, podrás gestionar relaciones `ManyToManyField` con modelos intermedios sin perder usabilidad en el panel de administración. 🛠️
