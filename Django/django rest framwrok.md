@@ -2630,3 +2630,82 @@ Considera usar [Django Grappelli](https://django-grappelli.readthedocs.io/) o [D
 - **Para casos avanzados**: Personaliza el widget del admin con JavaScript o usa paquetes de terceros.
 
 Con estas alternativas, podrás gestionar relaciones `ManyToManyField` con modelos intermedios sin perder usabilidad en el panel de administración. 🛠️
+
+
+
+
+
+
+
+# readonly Forms
+
+
+
+En un `ModelForm` de Django, si deseas marcar ciertos campos como solo de lectura (readonly), puedes hacerlo de varias maneras, ya que Django no tiene un atributo `readonly` directamente en los campos del formulario. Sin embargo, una práctica común es ajustar el widget de esos campos para que sean solo de lectura o manipular su estado en el método `__init__` del formulario.
+
+Aquí te muestro algunas formas de hacerlo:
+
+### 1. Usar `attrs` en el widget para marcar los campos como readonly en el HTML
+
+En el método `__init__` del formulario, puedes modificar los widgets de los campos que quieres que sean solo lectura, agregando el atributo `readonly` en sus atributos HTML:
+
+```python
+from django import forms
+from .models import MiModelo
+
+class MiModelForm(forms.ModelForm):
+    class Meta:
+        model = MiModelo
+        fields = ['campo1', 'campo2', 'campo3']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Lista de campos que quieres que sean solo lectura
+        readonly_fields = ['campo2', 'campo3']
+        for field_name in readonly_fields:
+            if field_name in self.fields:
+                self.fields[field_name].widget.attrs['readonly'] = True
+                # Opcional: evitar que el campo se edite mediante JavaScript
+                self.fields[field_name].widget.attrs['disabled'] = True
+```
+
+**Nota:** Si usas `disabled=True`, el campo no será enviado en la petición POST, por lo que si necesitas que el valor sea enviado, usa solo `readonly`.
+
+### 2. Para que el usuario no pueda editar el campo, pero el valor siga siendo enviado
+
+- Añade el atributo `readonly` en la widget.
+- No pongas `disabled`, ya que esto impide que el valor sea enviado en el formulario.
+
+```python
+self.fields[field_name].widget.attrs['readonly'] = True
+```
+
+### 3. Alternativa: Sobrescribir el método `save()` para ignorar cambios en esos campos
+
+Otra opción es mantener los campos en modo editable, pero en `save()` restaurar sus valores al momento de guardar, evitando que el usuario los modifique:
+
+```python
+class MiModelForm(forms.ModelForm):
+    class Meta:
+        model = MiModelo
+        fields = ['campo1', 'campo2', 'campo3']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._initial_campo2 = self.instance.campo2
+        self._initial_campo3 = self.instance.campo3
+
+    def save(self, commit=True):
+        # Restaurar los valores originales en los campos readonly
+        self.instance.campo2 = self._initial_campo2
+        self.instance.campo3 = self._initial_campo3
+        return super().save(commit=commit)
+```
+
+---
+
+### Resumen
+
+- Para marcar campos como solo lectura en el formulario, modifica los widgets en `__init__` agregando `attrs['readonly'] = True`.
+- Si quieres que el campo no sea editable y no se envíe su valor, usa `disabled=True` (aunque esto puede tener implicaciones en la recepción del valor en `POST`).
+- La opción más común y sencilla es modificar los atributos del widget en `__init__`.
