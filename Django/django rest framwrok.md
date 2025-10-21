@@ -2631,15 +2631,7 @@ Considera usar [Django Grappelli](https://django-grappelli.readthedocs.io/) o [D
 
 Con estas alternativas, podrás gestionar relaciones `ManyToManyField` con modelos intermedios sin perder usabilidad en el panel de administración. 🛠️
 
-
-
-
-
-
-
 # readonly Forms
-
-
 
 En un `ModelForm` de Django, si deseas marcar ciertos campos como solo de lectura (readonly), puedes hacerlo de varias maneras, ya que Django no tiene un atributo `readonly` directamente en los campos del formulario. Sin embargo, una práctica común es ajustar el widget de esos campos para que sean solo de lectura o manipular su estado en el método `__init__` del formulario.
 
@@ -2709,3 +2701,90 @@ class MiModelForm(forms.ModelForm):
 - Para marcar campos como solo lectura en el formulario, modifica los widgets en `__init__` agregando `attrs['readonly'] = True`.
 - Si quieres que el campo no sea editable y no se envíe su valor, usa `disabled=True` (aunque esto puede tener implicaciones en la recepción del valor en `POST`).
 - La opción más común y sencilla es modificar los atributos del widget en `__init__`.
+
+
+
+
+
+# How to mock a decorator in Python
+
+
+
+- 1
+
+Crear una funcion que lo simule
+
+
+
+```python
+from functools import wraps
+def mock_db_task_decorator(*args, **kwargs):
+    """Decorate by doing nothing."""
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+```
+
+
+
+- 2
+
+Mocker el oringen de la funcion (No donde se usa)
+
+
+
+```python
+patch('huey.contrib.djhuey.db_task', mock_db_task_decorator).start()
+```
+
+
+
+- 3
+
+
+
+Luego dentro del test importar la funcion que hace uso del decorador (porque si se importa antes no tiene efecto, y es esta la raiz del problema)
+
+
+
+```python
+
+# codigo original
+
+@db_task(retries=3, retry_delay=5)
+def task_sync_user_contact(user_id: int) -> str | None:
+    """Async task for sync user contact to zoho"""
+    logger_prefix = f"[Zoho][Contact][{user_id}]"
+
+
+
+# otro archivo test
+
+from functools import wraps
+def mock_db_task_decorator(*args, **kwargs):
+    """Decorate by doing nothing."""
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
+
+
+
+
+@pytest.mark.django_db
+@patch("zoho.utils.cache.cache")
+def test_task_sync_user_contact_invalid_user_id(mock_cache,caplog):
+    mock_cache.get.return_value = None
+    # mock_cache.set.return_value = None
+    caplog.set_level(logging.INFO)
+    from zoho.tasks import task_sync_user_contact
+    result = task_sync_user_contact(0)
+    assert result == "[Zoho][Contact][0] is not a valid user id."
+    assert "[Zoho][Contact][0] is not a valid user id." in caplog.text
+```

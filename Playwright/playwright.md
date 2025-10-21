@@ -1544,3 +1544,45 @@ test("test con screenplay", async ({ page }) => {
   await openForm.close();
 });
 ```
+
+# toHaveURL - Page
+
+El problema ocurre porque **no estás importando `expect` desde `@playwright/test`** en el archivo donde usas `toHaveURL`. Aunque importas el tipo `Page`, los *matchers* específicos de Playwright (como `toHaveURL`) están asociados al `expect` de Playwright, no al tipo `Page`.
+
+### Solución
+
+Agrega esta importación en el archivo donde defines `this.page`:
+
+```typescript
+import { expect } from '@playwright/test'; // ¡Importa el expect de Playwright!
+```
+
+### Explicación
+
+- **`Page`** es solo el tipo de la página, pero **no incluye los matchers de assertions**.
+- Los métodos como `toHaveURL`, `toHaveText`, etc., son extensiones de **`expect` de Playwright**, no de la clase `Page`.
+- Cuando usas `{ page }` en los tests, Playwright automáticamente inyecta su versión de `expect` con los matchers. Pero en otros archivos (como clases de Page Objects), **debes importar `expect` explícitamente**.
+
+### Código corregido
+
+```typescript
+import { Page } from "@playwright/test";
+import { expect } from "@playwright/test"; // ✅ Importa el expect de Playwright
+
+class TuClase {
+  readonly page: Page;
+
+  async verificarURL(currentLang: string) {
+    await expect(this.page).toHaveURL(`${currentLang}/auth/register`); // ✅ Ahora funciona
+  }
+}
+```
+
+### ¿Por qué ocurre esto?
+
+- Playwright extiende el `expect` estándar con matchers específicos para sus objetos (como `Page`).
+- Si no importas `expect` desde `@playwright/test`, TypeScript usa el `expect` genérico (sin los matchers de Playwright), lo que causa el error de tipado.
+
+### Nota adicional
+
+Si usas **Page Objects** o clases personalizadas, asegúrate de **siempre importar `expect` desde `@playwright/test`** en esos archivos. Esto es necesario incluso si ya importaste `Page`.
